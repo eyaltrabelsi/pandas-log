@@ -13,5 +13,5 @@ pytest-runner==5.1
 
 numpy
 pandas
-pandas_flavor
+pandas_flavor==0.1.2
 pyjanitor
