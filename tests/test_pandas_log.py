@@ -24,12 +24,11 @@ def test_pipeline():
         # auto_disable()
     df.head()
 
-    df2.query("legendary==1")\
-      .query("type_1=='fire' or type_2=='fire'")\
-      .drop("legendary", axis=1)\
-      .nsmallest(1, "total")\
-      .assign(type_1=lambda x: x.type_1)\
-      .reset_index(drop=True)
+    df2.query("legendary==1").query("type_1=='fire' or type_2=='fire'").drop(
+        "legendary", axis=1
+    ).nsmallest(1, "total").assign(type_1=lambda x: x.type_1).reset_index(
+        drop=True
+    )
 
     pass
     # df1 = pd.DataFrame(

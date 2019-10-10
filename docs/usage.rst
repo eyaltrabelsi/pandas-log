@@ -3,26 +3,10 @@ Usage
 =====
 
 
-Why pandas-log?
----------------
-
-Pandas-log is a Python implementation of the R package tidylog, and
-provides a feedback about basic pandas operations.
-
-The pandas has been invaluable for the data science ecosystem and
-usually consists of a series of steps that involve transforming raw data
-into an understandable/usable format. These series of steps need to be
-run in a certain sequence and if the result is unexpected it’s hard to
-understand what happened. Pandas-log log metadata on each operation
-which will allow to pinpoint the issues.
-
-Pandas-log Demo
----------------
-
 First we need to load some libraries including pandas-log
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: ipython3
+.. code::
 
     import pandas as pd
     import numpy as np
@@ -31,7 +15,7 @@ First we need to load some libraries including pandas-log
 Let’s take a look at our dataset:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: ipython3
+.. code::
 
     df = pd.read_csv("pokemon.csv")
     df.head(10)
@@ -154,7 +138,6 @@ Let’s take a look at our dataset:
           <td>65</td>
           <td>1</td>
           <td>False</td>
-
         </tr>
         <tr>
           <th>5</th>
@@ -259,9 +242,10 @@ The strategy will probably be something like:
 4. Keep the weakest pokemon among them using ``.nsmallest()`` .
 5. Reset index using ``.reset_index()`` .
 
-.. code:: ipython3
+.. code::
 
-    res = (df.query("legendary==0")
+    res = (df.copy()
+             .query("legendary==0")
              .query("type_1=='fire' or type_2=='fire'")
              .drop("legendary", axis=1)
              .nsmallest(1,"total")
@@ -325,10 +309,11 @@ Fortunetly thats what **pandas-log** is for! either as a global function
 or context manager. This the example with pandas_log’s
 ``context_manager``.
 
-.. code:: ipython3
+.. code::
 
     with pandas_log.enable():
-        res = (df.query("legendary==0")
+        res = (df.copy()
+                 .query("legendary==0")
                  .query("type_1=='fire' or type_2=='fire'")
                  .drop("legendary", axis=1)
                  .nsmallest(1,"total")
@@ -339,25 +324,23 @@ or context manager. This the example with pandas_log’s
 
 .. parsed-literal::
 
-    1) query(self="legendary==0"):
-    	* Step Took 0.0024781227111816406 seconds
+
+    1) [1mquery[0m(expr="legendary==0", inplace=False):
     	* Removed 65 rows (0.08125%), 735 rows remaining.
-    2) query(self="type_1=='fire' or type_2=='fire'"):
-    	* Step Took 0.0037260055541992188 seconds
+    	* Step Took 0.0025560855865478516 seconds
+
+    2) [1mquery[0m(expr="type_1=='fire' or type_2=='fire'", inplace=False):
     	* Removed 735 rows (1.0%), 0 rows remaining.
-    3) reindex():
-    	* Step Took 0.0005040168762207031 seconds
-    3) drop(self="legendary"):
-    	* Step Took 0.0009241104125976562 seconds
-    	* Removed the following columns (legendary) now only have the following columns (hp,type_2,defense,#,speed,type_1,generation,sp_def,attack,name,sp_atk,total).
+    	* Step Took 0.0040740966796875 seconds
+
+    3) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
+    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
     	* No change in number of rows.
-    4) reset_index():
-    	* Step Took 0.00023794174194335938 seconds
-    4) nsmallest(self="1",n="total"):
-    	* Step Took 0.0027031898498535156 seconds
+    	* Step Took 0.0007641315460205078 seconds
+
+    4) [1mnsmallest[0m(n=1, columns="total", keep='first'):
     	* Picked 1 smallest rows by columns (total).
-    5) reset_index():
-    	* Step Took 0.00019979476928710938 seconds
+    	* Step Took 0.0023779869079589844 seconds
 
 
 
@@ -405,10 +388,11 @@ or context manager. This the example with pandas_log’s
 
 This the example with pandas_log’s ``auto_enable``
 
-.. code:: ipython3
+.. code::
 
     pandas_log.auto_enable()
-    res = (df.query("legendary==0")
+    res = (df.copy()
+             .query("legendary==0")
              .query("type_1=='fire' or type_2=='fire'")
              .drop("legendary", axis=1)
              .nsmallest(1,"total")
@@ -420,25 +404,23 @@ This the example with pandas_log’s ``auto_enable``
 
 .. parsed-literal::
 
-    1) query(self="legendary==0"):
-    	* Step Took 0.002357006072998047 seconds
+
+    1) [1mquery[0m(expr="legendary==0", inplace=False):
     	* Removed 65 rows (0.08125%), 735 rows remaining.
-    2) query(self="type_1=='fire' or type_2=='fire'"):
-    	* Step Took 0.0037169456481933594 seconds
+    	* Step Took 0.0027070045471191406 seconds
+
+    2) [1mquery[0m(expr="type_1=='fire' or type_2=='fire'", inplace=False):
     	* Removed 735 rows (1.0%), 0 rows remaining.
-    3) reindex():
-    	* Step Took 0.0008518695831298828 seconds
-    3) drop(self="legendary"):
-    	* Step Took 0.001394033432006836 seconds
-    	* Removed the following columns (legendary) now only have the following columns (hp,type_2,defense,#,speed,type_1,generation,sp_def,attack,name,sp_atk,total).
+    	* Step Took 0.0044138431549072266 seconds
+
+    3) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
+    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
     	* No change in number of rows.
-    4) reset_index():
-    	* Step Took 0.00019311904907226562 seconds
-    4) nsmallest(self="1",n="total"):
-    	* Step Took 0.0024139881134033203 seconds
+    	* Step Took 0.0010120868682861328 seconds
+
+    4) [1mnsmallest[0m(n=1, columns="total", keep='first'):
     	* Picked 1 smallest rows by columns (total).
-    5) reset_index():
-    	* Step Took 0.00020575523376464844 seconds
+    	* Step Took 0.0033338069915771484 seconds
 
 
 
@@ -487,23 +469,17 @@ This the example with pandas_log’s ``auto_enable``
 We can see clearly that in the second step (``.query()``) we filter all the rows!! and indeed we should of writen Fire as oppose to fire
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: ipython3
+.. code::
 
 
-    res = (df.query("type_1=='Fire' or type_2=='Fire'")
+    res = (df.copy()
+             .query("type_1=='Fire' or type_2=='Fire'")
              .query("legendary==0")
              .drop("legendary", axis=1)
              .nsmallest(1,"total")
              .reset_index(drop=True)
           )
     res
-
-
-.. parsed-literal::
-
-    1) query(self="type_1=='Fire' or type_2=='Fire'"):
-    	* Step Took 0.0030159950256347656 seconds
-    	* Removed 736 rows (0.92%), 64 rows remaining.
 
 
 
@@ -577,10 +553,11 @@ One can use verbose variable which allows lower level logs functionalities like 
 
 This can explain comparision issues.
 
-.. code:: ipython3
+.. code::
 
     with pandas_log.enable(verbose=True):
-        res = (df.query("legendary==0")
+        res = (df.copy()
+                 .query("legendary==0")
                  .query("type_1=='Fire' or type_2=='Fire'")
                  .drop("legendary", axis=1)
                  .nsmallest(1,"total")
@@ -591,29 +568,35 @@ This can explain comparision issues.
 
 .. parsed-literal::
 
-    1) query(self="legendary==0"):
-    	* Step Took 0.0025539398193359375 seconds
+
+    1) [1mcopy[0m(deep=True):
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.0005130767822265625 seconds
+
+    2) [1mquery[0m(expr="legendary==0", inplace=False):
     	* Removed 65 rows (0.08125%), 735 rows remaining.
-    2) query(self="type_1=='Fire' or type_2=='Fire'"):
-    	* Step Took 0.0038051605224609375 seconds
+    	* Step Took 0.0033111572265625 seconds
+
+    3) [1mquery[0m(expr="type_1=='Fire' or type_2=='Fire'", inplace=False):
     	* Removed 679 rows (0.9238095238095239%), 56 rows remaining.
-    3) reindex():
-    	* Step Took 0.0004749298095703125 seconds
-    3) drop(self="legendary"):
-    	* Step Took 0.0007948875427246094 seconds
-    	* Removed the following columns (legendary) now only have the following columns (hp,type_2,defense,#,speed,type_1,generation,sp_def,attack,name,sp_atk,total).
+    	* Step Took 0.003696918487548828 seconds
+
+    4) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
+    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
     	* No change in number of rows.
-    4) copy():
-    	* Step Took 0.00015687942504882812 seconds
-    4) reset_index():
-    	* Step Took 0.00031185150146484375 seconds
-    4) nsmallest(self="1",n="total"):
-    	* Step Took 0.0015668869018554688 seconds
+    	* Step Took 0.0008273124694824219 seconds
+
+    5) [1mcopy[0m(deep=True):
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.00017905235290527344 seconds
+
+    5) [1mnsmallest[0m(n=1, columns="total", keep='first'):
     	* Picked 1 smallest rows by columns (total).
-    5) copy():
-    	* Step Took 0.0003211498260498047 seconds
-    5) reset_index():
-    	* Step Took 0.0006539821624755859 seconds
+    	* Step Took 0.0014688968658447266 seconds
+
+    6) [1mcopy[0m(deep=True):
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.0001900196075439453 seconds
 
 
 
@@ -680,10 +663,11 @@ was being copied
 One can use silent variable which allows to suppress stdout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: ipython3
+.. code::
 
     with pandas_log.enable(silent=True):
-        res = (df.query("legendary==0")
+        res = (df.copy()
+                 .query("legendary==0")
                  .query("type_1=='Fire' or type_2=='Fire'")
                  .drop("legendary", axis=1)
                  .nsmallest(1,"total")
@@ -694,9 +678,117 @@ One can use silent variable which allows to suppress stdout
 
 .. parsed-literal::
 
-    1) query(self="legendary==0"):
-    	* Step Took 0.002171754837036133 seconds
+
+    1) [1mcopy[0m(deep=True):
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.00025963783264160156 seconds
+
+
+
+
+.. raw:: html
+
+    <div>
+    <style scoped>
+        .dataframe tbody tr th:only-of-type {
+            vertical-align: middle;
+        }
+
+        .dataframe tbody tr th {
+            vertical-align: top;
+        }
+
+        .dataframe thead th {
+            text-align: right;
+        }
+    </style>
+    <table border="1" class="dataframe">
+      <thead>
+        <tr style="text-align: right;">
+          <th></th>
+          <th>#</th>
+          <th>name</th>
+          <th>type_1</th>
+          <th>type_2</th>
+          <th>total</th>
+          <th>hp</th>
+          <th>attack</th>
+          <th>defense</th>
+          <th>sp_atk</th>
+          <th>sp_def</th>
+          <th>speed</th>
+          <th>generation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>0</th>
+          <td>218</td>
+          <td>Slugma</td>
+          <td>Fire</td>
+          <td>NaN</td>
+          <td>250</td>
+          <td>40</td>
+          <td>40</td>
+          <td>40</td>
+          <td>70</td>
+          <td>40</td>
+          <td>20</td>
+          <td>2</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+
+
+
+One can use full_signature variable which allows to suppress the signature
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    with pandas_log.enable(full_signature=False):
+        res = (df.copy()
+                 .query("legendary==0")
+                 .query("type_1=='Fire' or type_2=='Fire'")
+                 .drop("legendary", axis=1)
+                 .nsmallest(1,"total")
+                 .reset_index(drop=True)
+              )
+    res
+
+
+.. parsed-literal::
+
+
+    1) [1mcopy[0m(deep=True):
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.0002608299255371094 seconds
+
+    2) [1mquery[0m(expr="legendary==0"):
     	* Removed 65 rows (0.08125%), 735 rows remaining.
+    	* Step Took 0.002346038818359375 seconds
+
+    3) [1mquery[0m(expr="type_1=='Fire' or type_2=='Fire'"):
+    	* Removed 679 rows (0.9238095238095239%), 56 rows remaining.
+    	* Step Took 0.0029571056365966797 seconds
+
+    4) [1mdrop[0m(labels="legendary"):
+    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
+    	* No change in number of rows.
+    	* Step Took 0.0006778240203857422 seconds
+
+    5) [1mcopy[0m():
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.00016117095947265625 seconds
+
+    5) [1mnsmallest[0m(n=1, columns="total"):
+    	* Picked 1 smallest rows by columns (total).
+    	* Step Took 0.0014069080352783203 seconds
+
+    6) [1mcopy[0m():
+    	* using default strategy (some metric might not be relevant)
+    	* Step Took 0.0001609325408935547 seconds
 
 
 
