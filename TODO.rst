@@ -1,3 +1,4 @@
 - Add statistics from tidylog from it.
 - add formats of warnings.
+- todo check if copy is first
 - add logs for series as well.
