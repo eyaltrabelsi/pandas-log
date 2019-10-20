@@ -22,7 +22,7 @@ class Timer:
         exec_time = end - start
         exec_time_humanize = humanize.naturaldelta(exec_time)
         if exec_time_humanize == "a moment":
-            exec_time_humanize = f"{exec_time} seconds"
+            exec_time_humanize = f"{exec_time} seconds."
         return f"\t* Step Took {exec_time_humanize}"
 
     def __enter__(self, *args, **kwargs):

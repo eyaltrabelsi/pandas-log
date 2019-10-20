@@ -110,6 +110,7 @@ class DataFrameLogger:
             print(self)
 
     def __repr__(self):
+        # TODO move this part
         """ Return string representation of DataFrameLogger aka
             Statistics regarding applied function
 

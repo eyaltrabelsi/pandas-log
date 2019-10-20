@@ -1,3 +1,3 @@
 - Add statistics from tidylog from it.
-- travis.
-- Actual test that pandas methods are not breaking.
+- add formats of warnings.
+- add logs for series as well.

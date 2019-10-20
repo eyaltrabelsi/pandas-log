@@ -1,12 +1,11 @@
 ORIGINAL_METHOD_PREFIX = "original_"
 PATCHED_LOG_METHOD_PREFIX = "log_"
-PANDAS_ADDITIONAL_METHODS_TO_OVERIDE = ["copy"]
+PANDAS_ADDITIONAL_METHODS_TO_OVERIDE = ["copy", "reset_index"]
 PANDAS_METHODS_TO_OVERIDE = [
     "query",
     "drop",
     "dropna",
     "assign",
-    # "reset_index",
     "sort_index",
     "sort_values",
     "head",

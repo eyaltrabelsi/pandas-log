@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Rows messages
-REMOVED_NO_ROWS_MSG = "\t* No change in number of rows."
+REMOVED_NO_ROWS_MSG = "\t* No change in number of rows of input df."
 FILTERED_ROWS_MSG = "\t* Removed {rows_removed} rows ({rows_removed_pct}%), {rows_remaining} rows remaining."
 
 # Cols messages
@@ -15,8 +15,9 @@ FILLNA_NO_NA_MSG = "\t* There are no nulls."
 FILLNA_WITHH_NA_MSG = "\t* Filled {} with {}."
 
 # Mege messages
-JOIN_ROWS_MSG = "\t* Its a {how} join.\n\t* Number of rows changed, after join is {output_rows} rows."
+JOIN_ROWS_MSG = "\t* Number of rows changed, after join is {output_rows} rows."
 JOIN_NEW_COLS_MSG = "\t* Added {num_new_columns} columns ({new_columns})."
+JOIN_TYPE_MSG = "\t* Its a {how} join with the following cardinality:\n\t\t> rows only in left is {left_only}.\n\t\t> rows only in right is {right_only}.\n\t\t> rows in both is {both}."
 
 # Pick messages
 SAMPLE_MSG = "\t* Picked random sample of {output_rows} rows."
@@ -34,15 +35,13 @@ DEFAULT_STRATEGY_USED_MSG = (
 )
 TRANSFORMED_TO_DF_MSG = "\t* After transformation we received Series"
 
-# TODO refactor this mess
-
 
 def rows_removed(input_df, output_df):
     return len(input_df) - len(output_df)
 
 
 def rows_removed_pct(input_df, output_df):
-    return (rows_removed(input_df, output_df)) / len(input_df)
+    return 100 * (rows_removed(input_df, output_df)) / len(input_df)
 
 
 def rows_remaining(output_df):
@@ -87,7 +86,7 @@ def num_new_columns(input_df, output_df):
 
 def log_default(output_df, input_df, **kwargs):
     logs = [DEFAULT_STRATEGY_USED_MSG]
-    # todo if dataframe or series
+
     if isinstance(output_df, pd.DataFrame):
         if not is_same_cols(input_df, output_df):
             logs.append(
@@ -267,10 +266,13 @@ def log_merge(
     **kwargs,
 ):
     logs = []
+    merged = input_df.original_merge(right, "outer", on, left_on, right_on, left_index, right_index, sort, suffixes, copy, True, validate)
+    logs.append(JOIN_TYPE_MSG.format(how=how,
+                                     **merged._merge.value_counts().to_dict()))
     if is_same_rows(input_df, output_df):
         logs.append(REMOVED_NO_ROWS_MSG)
     else:
-        logs.append(JOIN_ROWS_MSG.format(how=how, output_rows=len(output_df)))
+        logs.append(JOIN_ROWS_MSG.format(output_rows=len(output_df)))
     if not is_same_cols(input_df, output_df):
         logs.append(
             JOIN_NEW_COLS_MSG.format(
@@ -278,6 +280,7 @@ def log_merge(
                 new_columns=str_new_columns(input_df, output_df),
             )
         )
+
     return "\n".join(logs)
 
 
@@ -293,10 +296,14 @@ def log_join(
     **kwargs,
 ):
     logs = []
+    merged = input_df.original_merge(other, "outer", on, input_df.index, other.index, indicator=True)
+    logs.append(JOIN_TYPE_MSG.format(how=how,
+                                     **merged._merge.value_counts().to_dict()))
+
     if is_same_rows(input_df, output_df):
         logs.append(REMOVED_NO_ROWS_MSG)
     else:
-        logs.append(JOIN_ROWS_MSG.format(how=how, output_rows=len(output_df)))
+        logs.append(JOIN_ROWS_MSG.format(output_rows=len(output_df)))
     if not is_same_cols(input_df, output_df):
         logs.append(
             JOIN_NEW_COLS_MSG.format(
