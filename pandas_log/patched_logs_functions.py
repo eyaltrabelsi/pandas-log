@@ -266,9 +266,23 @@ def log_merge(
     **kwargs,
 ):
     logs = []
-    merged = input_df.original_merge(right, "outer", on, left_on, right_on, left_index, right_index, sort, suffixes, copy, True, validate)
-    logs.append(JOIN_TYPE_MSG.format(how=how,
-                                     **merged._merge.value_counts().to_dict()))
+    merged = input_df.original_merge(
+        right,
+        "outer",
+        on,
+        left_on,
+        right_on,
+        left_index,
+        right_index,
+        sort,
+        suffixes,
+        copy,
+        True,
+        validate,
+    )
+    logs.append(
+        JOIN_TYPE_MSG.format(how=how, **merged._merge.value_counts().to_dict())
+    )
     if is_same_rows(input_df, output_df):
         logs.append(REMOVED_NO_ROWS_MSG)
     else:
@@ -296,9 +310,12 @@ def log_join(
     **kwargs,
 ):
     logs = []
-    merged = input_df.original_merge(other, "outer", on, input_df.index, other.index, indicator=True)
-    logs.append(JOIN_TYPE_MSG.format(how=how,
-                                     **merged._merge.value_counts().to_dict()))
+    merged = input_df.original_merge(
+        other, "outer", on, input_df.index, other.index, indicator=True
+    )
+    logs.append(
+        JOIN_TYPE_MSG.format(how=how, **merged._merge.value_counts().to_dict())
+    )
 
     if is_same_rows(input_df, output_df):
         logs.append(REMOVED_NO_ROWS_MSG)

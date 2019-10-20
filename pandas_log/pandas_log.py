@@ -43,6 +43,7 @@ def enable(verbose=False, silent=False, full_signature=True):
         :param verbose: Whether some inner functions should be recorded as well.
                         For example: when a dataframe being copied
         :param silent: Whether additional the statistics get printed
+        :param full_signature: adding additional information to function signature
         :return: None
     """
 
@@ -57,6 +58,7 @@ def auto_enable(verbose=False, silent=False, full_signature=True):
         :param verbose: Whether some inner functions should be recorded as well.
                         For example: when a dataframe being copied
         :param silent: Whether additional the statistics get printed
+        :param full_signature: adding additional information to function signature
         :return: None
     """
     global ALREADY_ENABLED

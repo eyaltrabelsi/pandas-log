@@ -1,13 +1,46 @@
 import itertools
 from contextlib import suppress
-from functools import wraps
+from functools import partial, wraps
 from inspect import signature
 
 import pandas as pd
-import pandas_flavor as pf
 
+import pandas_flavor as pf
 from pandas_log import patched_logs_functions, settings
 from pandas_log.timer import Timer
+
+
+def set_df_attr(df, attr_name, attr_value):
+    """ Hacky way to set attributes in dataframe
+
+        :param df: DataFrame
+        :param attr_name: Attribute name
+        :param attr_value: Attribute value
+        :return: None
+    """
+
+    df.__dict__[attr_name] = attr_value
+
+
+def append_df_attr(df, attr_name, attr_value):
+    """ Hacky way to append a value to dataframe
+
+        :param df: DataFrame
+        :param attr_name: Attribute name
+        :param attr_value: Attribute value
+        :return: None
+    """
+
+    df.__dict__[attr_name].append(attr_value)
+
+
+def get_df_attr(df, attr_name, default_val):
+    """ Get Dataframe attribute if exists otherwise default value
+
+        :return: Dataframe attribute
+    """
+
+    return df.__dict__.get(attr_name, default_val)
 
 
 def get_pandas_func(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
@@ -107,43 +140,75 @@ def keep_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
 
 
 def create_overide_pandas_func(func, silent, full_signature):
-    """ Create overridden pandas method dynamically
+    """ Create overridden pandas method dynamically with
+        additional logging using DataFrameLogger
+
+        Note: if we extracting _overide_dataframe_method outside we need to implement decorator like here
+              https://stackoverflow.com/questions/10176226/how-do-i-pass-extra-arguments-to-a-python-decorator
 
         :param func: pandas method name to be overridden
         :param silent: Whether additional the statistics get printed
+        :param full_signature: adding additional information to function signature
         :return: the same function with additional logging capabilities
     """
 
+    def _get_step_stats(
+        fn, fn_args, fn_kwargs, input_df, output_df, exec_time, step_number
+    ):
+        from pandas_log.step_stats import StepStats
+
+        func_logs = _get_logs_for_specifc_method(
+            fn, fn_args, fn_kwargs, input_df, output_df
+        )
+
+        step_stats = StepStats(
+            exec_time, fn, fn_args, full_signature, step_number, func_logs
+        )
+        return step_stats
+
+    def _persist_execution_stats(input_df, output_df, step_stats, step_number):
+        set_df_attr(output_df, "execution_step_number", step_number)
+        prev_exec_history = get_df_attr(input_df, "execution_history", [])
+        set_df_attr(output_df, "execution_history", prev_exec_history)
+        append_df_attr(output_df, "execution_history", step_stats)
+
+    def _get_logs_for_specifc_method(
+        fn, fn_args, fn_kwargs, input_df, output_df
+    ):
+        fn_kwargs["kwargs"] = fn_kwargs.copy()
+        log_method = get_patch_log_func(fn)
+        log_method = partial(log_method, output_df, input_df)
+        return log_method(*fn_args, **fn_kwargs)
+
     def _overide_dataframe_method(fn):
-        """ Decorator function that Create overridden pandas method with
-            additional logging using DataFrameLogger
-
-            Note: if we extracting _overide_dataframe_method outside we need to implement decorator like here
-                  https://stackoverflow.com/questions/10176226/how-do-i-pass-extra-arguments-to-a-python-decorator
-            :param fn: pandas original method to be overridden
-            :return: the overridden pandas method
-        """
-
         @pf.register_dataframe_method
         @wraps(fn)
         def wrapped(*args, **fn_kwargs):
+            # Execute original method and save execution time in t
             with Timer() as t:
                 output_df = get_pandas_func(fn)(*args, **fn_kwargs)
 
+            # Prepare variables
             input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
-            from pandas_log.dataframe_logger import DataFrameLogger
+            step_number = get_df_attr(input_df, "execution_step_number", 0) + 1
 
-            dl = DataFrameLogger(
-                exec_time,
+            # calculate steps stats and persist them into the dataframes
+            step_stats = _get_step_stats(
                 fn,
                 fn_args,
                 fn_kwargs,
                 input_df,
                 output_df,
-                silent,
-                full_signature,
+                exec_time,
+                step_number,
             )
-            dl.calc_step_stats()
+            _persist_execution_stats(
+                input_df, output_df, step_stats, step_number
+            )
+
+            if not silent:
+                print(step_stats)
+
             return output_df
 
         return wrapped
