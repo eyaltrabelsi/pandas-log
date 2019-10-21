@@ -10,6 +10,8 @@ FILTERED_COLS_MSG = "\t* Removed the following columns ({cols_removed}) now only
 ASSIGN_EXISTING_MSG = "\t* The columns {existing_cols} were reassigned."
 ASSIGN_NEW_MSG = "\t* The columns {new_cols} were created."
 
+# Group by messages
+GROUPBY_MSG = "\t* Grouping by {} resulted in {} groups like {}."
 # N/A messages
 FILLNA_NO_NA_MSG = "\t* There are no nulls."
 FILLNA_WITHH_NA_MSG = "\t* Filled {} with {}."
@@ -84,7 +86,7 @@ def num_new_columns(input_df, output_df):
     return len(set(output_df.columns) - set(input_df.columns))
 
 
-def log_default(output_df, input_df, **kwargs):
+def log_default(output_df, input_df, *args, **kwargs):
     logs = [DEFAULT_STRATEGY_USED_MSG]
 
     if isinstance(output_df, pd.DataFrame):
@@ -342,6 +344,8 @@ def log_fillna(
     downcast=None,
     **kwargs,
 ):
+
+    value = "empty string" if value == "" else value
     if num_of_na(input_df) == num_of_na(output_df):
         return FILLNA_NO_NA_MSG
     else:
@@ -361,6 +365,14 @@ def log_sample(
     **kwargs,
 ):
     return SAMPLE_MSG.format(output_rows=len(output_df))
+
+
+def log_groupby(output_df, input_df, by=None, axis=0, level=None, as_index=True, sort=True, group_keys=True, squeeze=False, observed=False, **kwargs):
+    group_by = ",".join(by)
+    groups = list(output_df.groups)
+    groups_len = len(groups)
+    groups_repr = ", ".join(groups) if groups_len < 5 else ",".join(groups[:5]) + " and more"
+    return GROUPBY_MSG.format(group_by, groups_len, groups_repr)
 
 
 def log_nlargest(output_df, input_df, n, columns, keep="first", **kwargs):
