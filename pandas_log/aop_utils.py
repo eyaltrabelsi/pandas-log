@@ -8,7 +8,7 @@ import pandas as pd
 import pandas_flavor as pf
 from pandas_log import patched_logs_functions, settings
 from pandas_log.timer import Timer
-
+from pandas_log.settings import PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
 
 def set_df_attr(df, attr_name, attr_value):
     """ Hacky way to set attributes in dataframe
@@ -188,18 +188,16 @@ def create_overide_pandas_func(func, silent, full_signature):
             with Timer() as t:
                 output_df = get_pandas_func(fn)(*args, **fn_kwargs)
 
-            # Naive way to enforce regular work of old instances methods
             from pandas_log.pandas_log import ALREADY_ENABLED
 
-            if ALREADY_ENABLED:
-                # Prepare variables
-                input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
-                step_number = (
-                    get_df_attr(input_df, "execution_step_number", 0) + 1
-                )
+            # Prepare variables
+            input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
+            step_number = get_df_attr(input_df, "execution_step_number", 0)
+            if fn.__name__ not in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE:
+                step_number += 1
 
-                # calculate steps stats and persist them into the dataframes
-                step_stats = _get_step_stats(
+            # calculate steps stats and persist them into the dataframes
+            step_stats = _get_step_stats(
                     fn,
                     fn_args,
                     fn_kwargs,
@@ -208,12 +206,14 @@ def create_overide_pandas_func(func, silent, full_signature):
                     exec_time,
                     step_number,
                 )
-                _persist_execution_stats(
+            _persist_execution_stats(
                     input_df, output_df, step_stats, step_number
                 )
 
-                if not silent:
-                    print(step_stats)
+            # Naive way to enforce regular work of old instances methods
+            if not silent and ALREADY_ENABLED:
+                # TODO ADD verbose thingy
+                print(step_stats)
 
             return output_df
 

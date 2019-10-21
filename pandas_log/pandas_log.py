@@ -65,9 +65,8 @@ def auto_enable(verbose=False, silent=False, full_signature=True):
     if ALREADY_ENABLED:
         return
 
-    if verbose:
-        settings.PANDAS_METHODS_TO_OVERIDE.extend(
-            settings.PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+    settings.PANDAS_METHODS_TO_OVERIDE.extend(
+        settings.PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
         )
 
     # Suppressing warning of the fact we override pandas functions.

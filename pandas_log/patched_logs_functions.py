@@ -367,20 +367,20 @@ def log_sample(
     return SAMPLE_MSG.format(output_rows=len(output_df))
 
 
-def log_groupby(output_df, input_df, by=None, axis=0, level=None, as_index=True, sort=True, group_keys=True, squeeze=False, observed=False, **kwargs):
-    group_by = ",".join(by)
-    groups = list(output_df.groups)
-    groups_len = len(groups)
-    groups_repr = ", ".join(groups) if groups_len < 5 else ",".join(groups[:5]) + " and more"
-    return GROUPBY_MSG.format(group_by, groups_len, groups_repr)
-
-
 def log_nlargest(output_df, input_df, n, columns, keep="first", **kwargs):
     return NLARGEST_MSG.format(n=n, cols=columns)
 
 
 def log_nsmallest(output_df, input_df, n, columns, keep="first", **kwargs):
     return NSMALLEST_MSG.format(n=n, cols=columns)
+
+
+def log_groupby(output_df, input_df, by=None, axis=0, level=None, as_index=True, sort=True, group_keys=True, squeeze=False, observed=False, **kwargs):
+    group_by = ",".join(by)
+    groups = list(output_df.groups)
+    groups_len = len(groups)
+    groups_repr = ", ".join(groups) if groups_len < 5 else ",".join(groups[:5]) + " and more"
+    return GROUPBY_MSG.format(group_by, groups_len, groups_repr)
 
 
 if __name__ == "__main__":

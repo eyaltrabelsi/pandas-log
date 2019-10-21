@@ -15,6 +15,7 @@ PANDAS_METHODS_TO_OVERIDE = [
     "merge",
     "join",
     "nlargest",
+    # "__getitem__",
     "nsmallest",
     "apply",
     "applymap",
