@@ -37,8 +37,8 @@ class StepStats:
 
         func_logs = f"\n{self.func_logs}" if self.func_logs else ""
         step_number = (
-            "   "
+            "X"
             if self.fn.__name__ in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
-            else f"\n{self.step_number}) "
+            else self.step_number
         )
-        return f"\n{step_number}{self.func_sig}{func_logs}\n{self.exec_time}"
+        return f"\n{step_number}) {self.func_sig}{func_logs}\n{self.exec_time}"

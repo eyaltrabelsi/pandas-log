@@ -7,9 +7,10 @@ Why pandas-log?
 The pandas has been invaluable for the data science ecosystem and usually consists of a series of steps that involve transforming raw data into an understandable/usable format.
 These series of steps need to be run in a certain sequence and if the result is unexpected it's hard to understand what happened.
 ``Pandas-log`` log metadata on each operation which will allow to pinpoint the issues like:
-- Wrong predicate expressions.
-- Copying of our DataFrames.
-- Wrong joins/merge.
-- Performance Issues.
-- More
+
+    - Wrong predicate expressions.
+    - Copying of our DataFrames.
+    - Wrong joins/merge.
+    - Performance Issues.
+    - More
 

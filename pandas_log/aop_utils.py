@@ -188,26 +188,32 @@ def create_overide_pandas_func(func, silent, full_signature):
             with Timer() as t:
                 output_df = get_pandas_func(fn)(*args, **fn_kwargs)
 
-            # Prepare variables
-            input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
-            step_number = get_df_attr(input_df, "execution_step_number", 0) + 1
+            # Naive way to enforce regular work of old instances methods
+            from pandas_log.pandas_log import ALREADY_ENABLED
 
-            # calculate steps stats and persist them into the dataframes
-            step_stats = _get_step_stats(
-                fn,
-                fn_args,
-                fn_kwargs,
-                input_df,
-                output_df,
-                exec_time,
-                step_number,
-            )
-            _persist_execution_stats(
-                input_df, output_df, step_stats, step_number
-            )
+            if ALREADY_ENABLED:
+                # Prepare variables
+                input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
+                step_number = (
+                    get_df_attr(input_df, "execution_step_number", 0) + 1
+                )
 
-            if not silent:
-                print(step_stats)
+                # calculate steps stats and persist them into the dataframes
+                step_stats = _get_step_stats(
+                    fn,
+                    fn_args,
+                    fn_kwargs,
+                    input_df,
+                    output_df,
+                    exec_time,
+                    step_number,
+                )
+                _persist_execution_stats(
+                    input_df, output_df, step_stats, step_number
+                )
+
+                if not silent:
+                    print(step_stats)
 
             return output_df
 

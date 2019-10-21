@@ -46,7 +46,7 @@ clean:
 
 format:
 	isort -rc pandas_log -y -up -tc
-	black -l 79  pandas_log tests
+	black -l 79  pandas_log
 
 test: ## run tests on every Python version with tox
 	tox
