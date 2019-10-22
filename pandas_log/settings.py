@@ -1,6 +1,6 @@
 ORIGINAL_METHOD_PREFIX = "original_"
 PATCHED_LOG_METHOD_PREFIX = "log_"
-PANDAS_ADDITIONAL_METHODS_TO_OVERIDE = ["copy", "reset_index"]
+PANDAS_ADDITIONAL_METHODS_TO_OVERIDE = ["copy", "reset_index", "__getitem__"]
 PANDAS_METHODS_TO_OVERIDE = [
     "query",
     "drop",
@@ -15,7 +15,6 @@ PANDAS_METHODS_TO_OVERIDE = [
     "merge",
     "join",
     "nlargest",
-    # "__getitem__",
     "nsmallest",
     "apply",
     "applymap",

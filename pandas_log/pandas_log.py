@@ -67,7 +67,7 @@ def auto_enable(verbose=False, silent=False, full_signature=True):
 
     settings.PANDAS_METHODS_TO_OVERIDE.extend(
         settings.PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
-        )
+    )
 
     # Suppressing warning of the fact we override pandas functions.
     with warnings.catch_warnings():
@@ -75,7 +75,9 @@ def auto_enable(verbose=False, silent=False, full_signature=True):
         for func in dir(pd.DataFrame):
             if func in settings.PANDAS_METHODS_TO_OVERIDE:
                 keep_pandas_func_copy(func)
-                create_overide_pandas_func(func, silent, full_signature)
+                create_overide_pandas_func(
+                    func, verbose, silent, full_signature
+                )
     ALREADY_ENABLED = True
 
 

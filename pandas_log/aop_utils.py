@@ -7,8 +7,12 @@ import pandas as pd
 
 import pandas_flavor as pf
 from pandas_log import patched_logs_functions, settings
+from pandas_log.settings import (
+    PANDAS_ADDITIONAL_METHODS_TO_OVERIDE,
+    PANDAS_METHODS_TO_OVERIDE,
+)
 from pandas_log.timer import Timer
-from pandas_log.settings import PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+
 
 def set_df_attr(df, attr_name, attr_value):
     """ Hacky way to set attributes in dataframe
@@ -139,7 +143,7 @@ def keep_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     setattr(pd.DataFrame, f"{prefix}{func}", original_method)
 
 
-def create_overide_pandas_func(func, silent, full_signature):
+def create_overide_pandas_func(func, verbose, silent, full_signature):
     """ Create overridden pandas method dynamically with
         additional logging using DataFrameLogger
 
@@ -188,8 +192,6 @@ def create_overide_pandas_func(func, silent, full_signature):
             with Timer() as t:
                 output_df = get_pandas_func(fn)(*args, **fn_kwargs)
 
-            from pandas_log.pandas_log import ALREADY_ENABLED
-
             # Prepare variables
             input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
             step_number = get_df_attr(input_df, "execution_step_number", 0)
@@ -198,22 +200,27 @@ def create_overide_pandas_func(func, silent, full_signature):
 
             # calculate steps stats and persist them into the dataframes
             step_stats = _get_step_stats(
-                    fn,
-                    fn_args,
-                    fn_kwargs,
-                    input_df,
-                    output_df,
-                    exec_time,
-                    step_number,
-                )
+                fn,
+                fn_args,
+                fn_kwargs,
+                input_df,
+                output_df,
+                exec_time,
+                step_number,
+            )
             _persist_execution_stats(
-                    input_df, output_df, step_stats, step_number
-                )
+                input_df, output_df, step_stats, step_number
+            )
 
             # Naive way to enforce regular work of old instances methods
+            from pandas_log.pandas_log import ALREADY_ENABLED
+
             if not silent and ALREADY_ENABLED:
-                # TODO ADD verbose thingy
-                print(step_stats)
+                if (
+                    verbose
+                    or fn.__name__ not in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+                ):
+                    print(step_stats)
 
             return output_df
 

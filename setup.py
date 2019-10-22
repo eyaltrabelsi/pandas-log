@@ -16,7 +16,7 @@ test_requirements = ['pytest>=3',]
 
 setup(
     name='pandas-log',
-    version='0.1.3',
+    version='0.1.4',
     description="pandas-log provides feedback about basic pandas operations. It provides simple wrapper functions for the most common functions, such as apply, map, query and more.",
     author="Eyal Trabelsi",
     author_email='eyaltrabelsi@gmail.com',

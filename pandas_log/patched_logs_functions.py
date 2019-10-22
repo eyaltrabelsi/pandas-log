@@ -375,12 +375,52 @@ def log_nsmallest(output_df, input_df, n, columns, keep="first", **kwargs):
     return NSMALLEST_MSG.format(n=n, cols=columns)
 
 
-def log_groupby(output_df, input_df, by=None, axis=0, level=None, as_index=True, sort=True, group_keys=True, squeeze=False, observed=False, **kwargs):
+def log_groupby(
+    output_df,
+    input_df,
+    by=None,
+    axis=0,
+    level=None,
+    as_index=True,
+    sort=True,
+    group_keys=True,
+    squeeze=False,
+    observed=False,
+    **kwargs,
+):
     group_by = ",".join(by)
     groups = list(output_df.groups)
     groups_len = len(groups)
-    groups_repr = ", ".join(groups) if groups_len < 5 else ",".join(groups[:5]) + " and more"
+    groups_repr = (
+        ", ".join(groups)
+        if groups_len < 5
+        else ",".join(groups[:5]) + " and more"
+    )
     return GROUPBY_MSG.format(group_by, groups_len, groups_repr)
+
+
+def log___getitem__(output_df, input_df, key, *args, **kwargs):
+    logs = []
+    # TODO Naive handle of __getitem__ which return series
+    if isinstance(key, str):
+        return ""
+
+    if not is_same_cols(input_df, output_df):
+        logs.append(
+            FILTERED_COLS_MSG.format(
+                cols_removed=cols_removed(input_df, output_df),
+                cols_remaining=cols_remaining(output_df),
+            )
+        )
+    if not is_same_rows(input_df, output_df):
+        logs.append(
+            FILTERED_ROWS_MSG.format(
+                rows_removed=rows_removed(input_df, output_df),
+                rows_removed_pct=rows_removed_pct(input_df, output_df),
+                rows_remaining=rows_remaining(output_df),
+            )
+        )
+    return "\n".join(logs)
 
 
 if __name__ == "__main__":
