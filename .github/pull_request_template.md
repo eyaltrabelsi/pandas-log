@@ -45,16 +45,6 @@ Please ensure that you have done the following:
 
 To do a very quick check that everything is correct, follow these steps below:
 
-- [ ] Run the command `make check` from pandsa-log's top-level directory. This will automatically run:
+- [ ] Run the command `make format` from pandsa-log's top-level directory. This will automatically run:
     - black formatting
     - fix imports with isort
-    - running the test suite
-    - docs build
-        
-# Relevant Reviewers
-
-<!-- Finally, please tag relevant maintainers to review. -->
-
-Please tag maintainers to review.
-
-- @eyaltrabelsi

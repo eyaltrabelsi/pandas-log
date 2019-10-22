@@ -7,11 +7,8 @@ import pandas as pd
 
 import pandas_flavor as pf
 from pandas_log import patched_logs_functions, settings
-from pandas_log.settings import (
-    PANDAS_ADDITIONAL_METHODS_TO_OVERIDE,
-    PANDAS_METHODS_TO_OVERIDE,
-)
-from pandas_log.timer import Timer
+from pandas_log.pandas_execution_stats import PandasExecutionStats
+from pandas_log.settings import PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
 
 
 def set_df_attr(df, attr_name, attr_value):
@@ -157,16 +154,27 @@ def create_overide_pandas_func(func, verbose, silent, full_signature):
     """
 
     def _get_step_stats(
-        fn, fn_args, fn_kwargs, input_df, output_df, exec_time, step_number
+        execution_stats,
+        fn,
+        fn_args,
+        fn_kwargs,
+        input_df,
+        output_df,
+        step_number,
     ):
-        from pandas_log.step_stats import StepStats
+        from pandas_log.pandas_execution_stats import StepStats
 
         func_logs = _get_logs_for_specifc_method(
             fn, fn_args, fn_kwargs, input_df, output_df
         )
 
         step_stats = StepStats(
-            exec_time, fn, fn_args, full_signature, step_number, func_logs
+            execution_stats,
+            fn,
+            fn_args,
+            full_signature,
+            step_number,
+            func_logs,
         )
         return step_stats
 
@@ -189,23 +197,23 @@ def create_overide_pandas_func(func, verbose, silent, full_signature):
         @wraps(fn)
         def wrapped(*args, **fn_kwargs):
             # Execute original method and save execution time in t
-            with Timer() as t:
+            with PandasExecutionStats() as execution_stats:
                 output_df = get_pandas_func(fn)(*args, **fn_kwargs)
 
             # Prepare variables
-            input_df, fn_args, exec_time = args[0], args[1:], t.exec_time
+            input_df, fn_args = args[0], args[1:]
             step_number = get_df_attr(input_df, "execution_step_number", 0)
             if fn.__name__ not in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE:
                 step_number += 1
 
             # calculate steps stats and persist them into the dataframes
             step_stats = _get_step_stats(
+                execution_stats,
                 fn,
                 fn_args,
                 fn_kwargs,
                 input_df,
                 output_df,
-                exec_time,
                 step_number,
             )
             _persist_execution_stats(

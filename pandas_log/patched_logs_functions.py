@@ -31,9 +31,8 @@ TAIL_MSG = "\t* Picked the last {} rows."
 # Others
 SORT_VALUES_MSG = "\t* Sorting by columns {by} in a {'ascending' if ascending else 'descending'} order."
 SORT_INDEX_MSG = "\t* Sorting by index in a {'ascending' if ascending else 'descending'} order."
-NOT_IMPLEMENTED_MSG = "\t*Log not implemented yet for this function."
 DEFAULT_STRATEGY_USED_MSG = (
-    "\t* using default strategy (some metric might not be relevant)"
+    "\t* Using default strategy (some metric might not be relevant)."
 )
 TRANSFORMED_TO_DF_MSG = "\t* After transformation we received Series"
 
@@ -51,11 +50,11 @@ def rows_remaining(output_df):
 
 
 def cols_removed(input_df, output_df):
-    return ",".join(set(input_df.columns) - set(output_df.columns))
+    return ", ".join(set(input_df.columns) - set(output_df.columns))
 
 
 def cols_remaining(output_df):
-    return ",".join(set(output_df.columns))
+    return ", ".join(set(output_df.columns))
 
 
 def is_same_cols(input_df, output_df):
@@ -79,7 +78,7 @@ def num_of_na(df):
 
 
 def str_new_columns(input_df, output_df):
-    return ",".join(set(output_df.columns) - set(input_df.columns))
+    return ", ".join(set(output_df.columns) - set(input_df.columns))
 
 
 def num_new_columns(input_df, output_df):
@@ -185,13 +184,13 @@ def log_assign(output_df, input_df, **kwargs):
     if columns_changed(input_df, cols):
         logs.append(
             ASSIGN_EXISTING_MSG.format(
-                existing_cols=",".join(columns_changed(input_df, cols))
+                existing_cols=", ".join(columns_changed(input_df, cols))
             )
         )
     if columns_added(input_df, cols):
         logs.append(
             ASSIGN_NEW_MSG.format(
-                new_cols=",".join(columns_added(input_df, cols))
+                new_cols=", ".join(columns_added(input_df, cols))
             )
         )
     return "\n".join(logs)
@@ -388,13 +387,13 @@ def log_groupby(
     observed=False,
     **kwargs,
 ):
-    group_by = ",".join(by)
+    group_by = ", ".join(by)
     groups = list(output_df.groups)
     groups_len = len(groups)
     groups_repr = (
         ", ".join(groups)
         if groups_len < 5
-        else ",".join(groups[:5]) + " and more"
+        else ", ".join(groups[:5]) + " and more"
     )
     return GROUPBY_MSG.format(group_by, groups_len, groups_repr)
 
