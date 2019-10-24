@@ -72,7 +72,7 @@ you are more than welcome to discuss on the GitHub issue tracker.
 
 Submit Feedback
 -----------------
-The best way to send feedback is to file an issue at https://github.com/ericmjl/pandas-log/issues.
+The best way to send feedback is to file an issue at https://github.com/eyaltrabelsi/pandas-log/issues.
 
 If you are proposing a feature:
 
