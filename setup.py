@@ -25,7 +25,7 @@ setup(
     install_requires=requirements,
     python_requires=">=3.4",
     license="MIT license",
-    long_description=readme,
+    long_description="pandas-log provides feedback about basic pandas operations. It provides simple wrapper functions for the most common functions, such as apply, map, query and more.",
     long_description_content_type="text/x-rst",
     setup_requires=setup_requirements,
     test_suite='tests',

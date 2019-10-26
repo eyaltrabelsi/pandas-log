@@ -1,6 +1,7 @@
 
 Usage
 =====
+
 For a cleaner use-case I would `go here
 <https://towardsdatascience.com/introducing-pandas-log-3240a5e57e21>`_
 
