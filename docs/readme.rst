@@ -14,3 +14,7 @@ These series of steps need to be run in a certain sequence and if the result is 
     - Performance Issues.
     - More
 
+For medium article `go here
+<https://towardsdatascience.com/introducing-pandas-log-3240a5e57e21>`_
+For a full walkthrough `go here
+<https://github.com/eyaltrabelsi/pandas-log/blob/master/examples/pandas_log_intro.ipynb>`_

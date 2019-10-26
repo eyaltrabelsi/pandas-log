@@ -58,6 +58,8 @@ Lets look at an example, first we need to load ``pandas-log`` after ``pandas`` a
       .assign(lower_name=lambda x: x.name.map(str.lower))
       .reset_index()
 
+For medium article `go here
+<https://towardsdatascience.com/introducing-pandas-log-3240a5e57e21>`_
 For a full walkthrough `go here
 <https://github.com/eyaltrabelsi/pandas-log/blob/master/examples/pandas_log_intro.ipynb>`_
 
