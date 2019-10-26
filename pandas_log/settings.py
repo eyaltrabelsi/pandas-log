@@ -17,6 +17,7 @@ PANDAS_METHODS_TO_OVERIDE = [
     "nlargest",
     "nsmallest",
     "apply",
+    "iterrows",
     "applymap",
     "pipe",
     "rolling",
