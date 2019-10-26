@@ -1,4 +1,4 @@
-=====
+
 Usage
 =====
 
@@ -6,7 +6,7 @@ Usage
 First we need to load some libraries including pandas-log
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code::
+.. code:: ipython3
 
     import pandas as pd
     import numpy as np
@@ -15,7 +15,7 @@ First we need to load some libraries including pandas-log
 Let’s take a look at our dataset:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code::
+.. code:: ipython3
 
     df = pd.read_csv("pokemon.csv")
     df.head(10)
@@ -242,7 +242,7 @@ The strategy will probably be something like:
 4. Keep the weakest pokemon among them using ``.nsmallest()`` .
 5. Reset index using ``.reset_index()`` .
 
-.. code::
+.. code:: ipython3
 
     res = (df.copy()
              .query("legendary==0")
@@ -309,15 +309,13 @@ Fortunetly thats what **pandas-log** is for! either as a global function
 or context manager. This the example with pandas_log’s
 ``context_manager``.
 
-.. code::
+.. code:: ipython3
 
     with pandas_log.enable():
-        res = (df.copy()
-                 .query("legendary==0")
+        res = (df.query("legendary==0")
                  .query("type_1=='fire' or type_2=='fire'")
                  .drop("legendary", axis=1)
                  .nsmallest(1,"total")
-                 .reset_index(drop=True)
               )
     res
 
@@ -326,101 +324,37 @@ or context manager. This the example with pandas_log’s
 
 
     1) [1mquery[0m(expr="legendary==0", inplace=False):
-    	* Removed 65 rows (0.08125%), 735 rows remaining.
-    	* Step Took 0.0025560855865478516 seconds
+    	[4mMetadata[0m:
+    	* Removed 65 rows (8.125%), 735 rows remaining.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 199.4 kB.
+    	* Output Dataframe size is 188.5 kB.
 
     2) [1mquery[0m(expr="type_1=='fire' or type_2=='fire'", inplace=False):
-    	* Removed 735 rows (1.0%), 0 rows remaining.
-    	* Step Took 0.0040740966796875 seconds
+    	[4mMetadata[0m:
+    	* Removed 735 rows (100.0%), 0 rows remaining.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 188.5 kB.
+    	* Output Dataframe size is 0 Bytes.
 
     3) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
-    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
-    	* No change in number of rows.
-    	* Step Took 0.0007641315460205078 seconds
+    	[4mMetadata[0m:
+    	* Removed the following columns (legendary) now only have the following columns (attack, sp_def, speed, hp, total, type_2, #, name, type_1, generation, defense, sp_atk).
+    	* No change in number of rows of input df.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 0 Bytes.
+    	* Output Dataframe size is 0 Bytes.
 
     4) [1mnsmallest[0m(n=1, columns="total", keep='first'):
+    	[4mMetadata[0m:
     	* Picked 1 smallest rows by columns (total).
-    	* Step Took 0.0023779869079589844 seconds
-
-
-
-
-.. raw:: html
-
-    <div>
-    <style scoped>
-        .dataframe tbody tr th:only-of-type {
-            vertical-align: middle;
-        }
-
-        .dataframe tbody tr th {
-            vertical-align: top;
-        }
-
-        .dataframe thead th {
-            text-align: right;
-        }
-    </style>
-    <table border="1" class="dataframe">
-      <thead>
-        <tr style="text-align: right;">
-          <th></th>
-          <th>#</th>
-          <th>name</th>
-          <th>type_1</th>
-          <th>type_2</th>
-          <th>total</th>
-          <th>hp</th>
-          <th>attack</th>
-          <th>defense</th>
-          <th>sp_atk</th>
-          <th>sp_def</th>
-          <th>speed</th>
-          <th>generation</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
-    </div>
-
-
-
-This the example with pandas_log’s ``auto_enable``
-
-.. code::
-
-    pandas_log.auto_enable()
-    res = (df.copy()
-             .query("legendary==0")
-             .query("type_1=='fire' or type_2=='fire'")
-             .drop("legendary", axis=1)
-             .nsmallest(1,"total")
-             .reset_index(drop=True)
-          )
-    pandas_log.auto_disable()
-    res
-
-
-.. parsed-literal::
-
-
-    1) [1mquery[0m(expr="legendary==0", inplace=False):
-    	* Removed 65 rows (0.08125%), 735 rows remaining.
-    	* Step Took 0.0027070045471191406 seconds
-
-    2) [1mquery[0m(expr="type_1=='fire' or type_2=='fire'", inplace=False):
-    	* Removed 735 rows (1.0%), 0 rows remaining.
-    	* Step Took 0.0044138431549072266 seconds
-
-    3) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
-    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
-    	* No change in number of rows.
-    	* Step Took 0.0010120868682861328 seconds
-
-    4) [1mnsmallest[0m(n=1, columns="total", keep='first'):
-    	* Picked 1 smallest rows by columns (total).
-    	* Step Took 0.0033338069915771484 seconds
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 0 Bytes.
+    	* Output Dataframe size is 0 Bytes.
 
 
 
@@ -469,8 +403,7 @@ This the example with pandas_log’s ``auto_enable``
 We can see clearly that in the second step (``.query()``) we filter all the rows!! and indeed we should of writen Fire as oppose to fire
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code::
-
+.. code:: ipython3
 
     res = (df.copy()
              .query("type_1=='Fire' or type_2=='Fire'")
@@ -553,11 +486,10 @@ One can use verbose variable which allows lower level logs functionalities like 
 
 This can explain comparision issues.
 
-.. code::
+.. code:: ipython3
 
     with pandas_log.enable(verbose=True):
-        res = (df.copy()
-                 .query("legendary==0")
+        res = (df.query("legendary==0")
                  .query("type_1=='Fire' or type_2=='Fire'")
                  .drop("legendary", axis=1)
                  .nsmallest(1,"total")
@@ -569,34 +501,86 @@ This can explain comparision issues.
 .. parsed-literal::
 
 
-    1) [1mcopy[0m(deep=True):
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.0005130767822265625 seconds
+    1) [1mquery[0m(expr="legendary==0", inplace=False):
+    	[4mMetadata[0m:
+    	* Removed 65 rows (8.125%), 735 rows remaining.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 199.4 kB.
+    	* Output Dataframe size is 188.5 kB.
 
-    2) [1mquery[0m(expr="legendary==0", inplace=False):
-    	* Removed 65 rows (0.08125%), 735 rows remaining.
-    	* Step Took 0.0033111572265625 seconds
+    2) [1mquery[0m(expr="type_1=='Fire' or type_2=='Fire'", inplace=False):
+    	[4mMetadata[0m:
+    	* Removed 679 rows (92.38095238095238%), 56 rows remaining.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 188.5 kB.
+    	* Output Dataframe size is 14.4 kB.
 
-    3) [1mquery[0m(expr="type_1=='Fire' or type_2=='Fire'", inplace=False):
-    	* Removed 679 rows (0.9238095238095239%), 56 rows remaining.
-    	* Step Took 0.003696918487548828 seconds
+    3) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
+    	[4mMetadata[0m:
+    	* Removed the following columns (legendary) now only have the following columns (attack, sp_def, speed, hp, total, type_2, #, name, type_1, generation, defense, sp_atk).
+    	* No change in number of rows of input df.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.4 kB.
+    	* Output Dataframe size is 14.3 kB.
 
-    4) [1mdrop[0m(labels="legendary", axis=0, index=None, columns=None, level=None, inplace=False, errors='raise'):
-    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
-    	* No change in number of rows.
-    	* Step Took 0.0008273124694824219 seconds
+    X) [1m__getitem__[0m(key="total"):
+    	Metadata:
 
-    5) [1mcopy[0m(deep=True):
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.00017905235290527344 seconds
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.3 kB.
+    	* Output Dataframe size is 896 Bytes.
 
-    5) [1mnsmallest[0m(n=1, columns="total", keep='first'):
+    X) [1mcopy[0m(deep=True):
+    	[4mMetadata[0m:
+    	* Using default strategy (some metric might not be relevant).
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.3 kB.
+    	* Output Dataframe size is 14.3 kB.
+
+    X) [1mreset_index[0m(level=None, drop=False, inplace=False, col_level=0, col_fill=''):
+    	Metadata:
+
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.3 kB.
+    	* Output Dataframe size is 14.0 kB.
+
+    X) [1m__getitem__[0m(key="total"):
+    	Metadata:
+
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.0 kB.
+    	* Output Dataframe size is 576 Bytes.
+
+    4) [1mnsmallest[0m(n=1, columns="total", keep='first'):
+    	[4mMetadata[0m:
     	* Picked 1 smallest rows by columns (total).
-    	* Step Took 0.0014688968658447266 seconds
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.3 kB.
+    	* Output Dataframe size is 236 Bytes.
 
-    6) [1mcopy[0m(deep=True):
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.0001900196075439453 seconds
+    X) [1mcopy[0m(deep=True):
+    	[4mMetadata[0m:
+    	* Using default strategy (some metric might not be relevant).
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 236 Bytes.
+    	* Output Dataframe size is 236 Bytes.
+
+    X) [1mreset_index[0m(level=None, drop=False, inplace=False, col_level=0, col_fill=''):
+    	Metadata:
+
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 236 Bytes.
+    	* Output Dataframe size is 356 Bytes.
 
 
 
@@ -663,7 +647,7 @@ was being copied
 One can use silent variable which allows to suppress stdout
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code::
+.. code:: ipython3
 
     with pandas_log.enable(silent=True):
         res = (df.copy()
@@ -674,14 +658,6 @@ One can use silent variable which allows to suppress stdout
                  .reset_index(drop=True)
               )
     res
-
-
-.. parsed-literal::
-
-
-    1) [1mcopy[0m(deep=True):
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.00025963783264160156 seconds
 
 
 
@@ -745,11 +721,10 @@ One can use silent variable which allows to suppress stdout
 One can use full_signature variable which allows to suppress the signature
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code::
+.. code:: ipython3
 
     with pandas_log.enable(full_signature=False):
-        res = (df.copy()
-                 .query("legendary==0")
+        res = (df.query("legendary==0")
                  .query("type_1=='Fire' or type_2=='Fire'")
                  .drop("legendary", axis=1)
                  .nsmallest(1,"total")
@@ -761,34 +736,38 @@ One can use full_signature variable which allows to suppress the signature
 .. parsed-literal::
 
 
-    1) [1mcopy[0m(deep=True):
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.0002608299255371094 seconds
+    1) [1mquery[0m(expr="legendary==0", inplace=False):
+    	[4mMetadata[0m:
+    	* Removed 65 rows (8.125%), 735 rows remaining.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 199.4 kB.
+    	* Output Dataframe size is 188.5 kB.
 
-    2) [1mquery[0m(expr="legendary==0"):
-    	* Removed 65 rows (0.08125%), 735 rows remaining.
-    	* Step Took 0.002346038818359375 seconds
+    2) [1mquery[0m(expr="type_1=='Fire' or type_2=='Fire'"):
+    	[4mMetadata[0m:
+    	* Removed 679 rows (92.38095238095238%), 56 rows remaining.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 188.5 kB.
+    	* Output Dataframe size is 14.4 kB.
 
-    3) [1mquery[0m(expr="type_1=='Fire' or type_2=='Fire'"):
-    	* Removed 679 rows (0.9238095238095239%), 56 rows remaining.
-    	* Step Took 0.0029571056365966797 seconds
+    3) [1mdrop[0m(labels="legendary"):
+    	[4mMetadata[0m:
+    	* Removed the following columns (legendary) now only have the following columns (attack, sp_def, speed, hp, total, type_2, #, name, type_1, generation, defense, sp_atk).
+    	* No change in number of rows of input df.
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.4 kB.
+    	* Output Dataframe size is 14.3 kB.
 
-    4) [1mdrop[0m(labels="legendary"):
-    	* Removed the following columns (legendary) now only have the following columns (sp_def,defense,generation,speed,name,type_2,hp,sp_atk,type_1,#,total,attack).
-    	* No change in number of rows.
-    	* Step Took 0.0006778240203857422 seconds
-
-    5) [1mcopy[0m():
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.00016117095947265625 seconds
-
-    5) [1mnsmallest[0m(n=1, columns="total"):
+    4) [1mnsmallest[0m(n=1, columns="total"):
+    	[4mMetadata[0m:
     	* Picked 1 smallest rows by columns (total).
-    	* Step Took 0.0014069080352783203 seconds
-
-    6) [1mcopy[0m():
-    	* using default strategy (some metric might not be relevant)
-    	* Step Took 0.0001609325408935547 seconds
+    	[4mExecution Stats[0m:
+    	* Execution time: Step Took a moment seconds..
+    	* Input Dataframe size is 14.3 kB.
+    	* Output Dataframe size is 236 Bytes.
 
 
 
