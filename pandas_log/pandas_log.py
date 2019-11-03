@@ -7,15 +7,11 @@ from contextlib import contextmanager
 from functools import wraps
 
 import pandas as pd
-
 import pandas_flavor as pf
+
 from pandas_log import settings
-from pandas_log.aop_utils import (
-    calc_step_number,
-    get_pandas_func,
-    keep_pandas_func_copy,
-    restore_pandas_func_copy,
-)
+from pandas_log.aop_utils import (keep_pandas_func_copy,
+                                  restore_pandas_func_copy,)
 from pandas_log.pandas_execution_stats import StepStats, get_execution_stats
 
 __all__ = ["auto_enable", "auto_disable", "enable"]
@@ -115,9 +111,12 @@ def create_overide_pandas_func(func, verbose, silent, full_signature):
             input_df,
             output_df,
         )
-
-        step_stats.persist_execution_stats()
         step_stats.log_stats_if_needed(silent, verbose)
+        if isinstance(output_df, pd.DataFrame) or isinstance(
+            output_df, pd.Series
+        ):
+            step_stats.persist_execution_stats()
+
         return output_df
 
     def _overide_dataframe_method(fn):

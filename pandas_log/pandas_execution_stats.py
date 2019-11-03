@@ -7,18 +7,11 @@ from time import time
 import pandas as pd
 
 from pandas_log import patched_logs_functions
-from pandas_log.aop_utils import (
-    append_df_attr,
-    calc_step_number,
-    get_df_attr,
-    get_pandas_func,
-    get_signature_repr,
-    set_df_attr,
-)
-from pandas_log.settings import (
-    PANDAS_ADDITIONAL_METHODS_TO_OVERIDE,
-    PATCHED_LOG_METHOD_PREFIX,
-)
+from pandas_log.aop_utils import (append_df_attr, calc_step_number,
+                                  get_df_attr, get_pandas_func,
+                                  get_signature_repr, set_df_attr,)
+from pandas_log.settings import (PANDAS_ADDITIONAL_METHODS_TO_OVERIDE,
+                                 PATCHED_LOG_METHOD_PREFIX,)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -28,9 +21,10 @@ with warnings.catch_warnings():
 def get_execution_stats(fn, input_df, fn_args, fn_kwargs):
     start = time()
     output_df = get_pandas_func(fn)(input_df, *fn_args, **fn_kwargs)
-    exec_time = humanize.naturaldelta(time() - start)
-    if exec_time == "a moment":
-        exec_time = f"{exec_time} seconds."
+    exec_time = time() - start
+    exec_time_pretty = humanize.naturaldelta(exec_time)
+    if exec_time_pretty == "a moment":
+        exec_time_pretty = f"{round(exec_time,6)} seconds"
     step_number = calc_step_number(fn.__name__, input_df)
 
     input_memory_size = StepStats.calc_df_series_memory(input_df)
@@ -41,7 +35,7 @@ def get_execution_stats(fn, input_df, fn_args, fn_kwargs):
         "exec_time step_number input_memory_size output_memory_size",
     )
     execution_stats = ExecutionStats(
-        exec_time, step_number, input_memory_size, output_memory_size
+        exec_time_pretty, step_number, input_memory_size, output_memory_size
     )
     return output_df, execution_stats
 
@@ -77,12 +71,14 @@ class StepStats:
 
     @staticmethod
     def calc_df_series_memory(df_or_series):
-        memory_size = df_or_series.memory_usage(index=True, deep=True)
-        return (
-            humanize.naturalsize(memory_size.sum())
-            if isinstance(memory_size, pd.Series)
-            else humanize.naturalsize(memory_size)
-        )
+        res = None
+        if isinstance(df_or_series, pd.Series):
+            mem = df_or_series.memory_usage(index=True, deep=True)
+            res = humanize.naturalsize(mem)
+        elif isinstance(df_or_series, pd.DataFrame):
+            mem = df_or_series.memory_usage(index=True, deep=True)
+            res = humanize.naturalsize(mem.sum())
+        return res
 
     def persist_execution_stats(self):
         prev_exec_history = get_df_attr(self.input_df, "execution_history", [])
@@ -112,7 +108,11 @@ class StepStats:
             )
 
         log_method = partial(log_method, self.output_df, self.input_df)
-        return log_method(*self.fn_args, **self.fn_kwargs)
+        logs, tips = log_method(*self.fn_args, **self.fn_kwargs)
+        return logs, tips
+
+    def _repr_html_(self):
+        pass
 
     def __repr__(self):
         # Step title
@@ -127,12 +127,9 @@ class StepStats:
         step_title = f"{step_number}) {func_sig}"
 
         # Step Metadata stats
-        func_logs = self.get_logs_for_specifc_method()
-        metadata_stats = (
-            f"\033[4mMetadata\033[0m:\n{func_logs}"
-            if func_logs
-            else "Metadata:\n"
-        )
+        logs, tips = self.get_logs_for_specifc_method()
+        metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
+        metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
 
         # Step Execution stats
         exec_time_humanize = (
@@ -142,7 +139,7 @@ class StepStats:
         exec_output_memory_humanize = f"* Output Dataframe size is {self.execution_stats.output_memory_size}."
         execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_time_humanize}\n\t{exec_input_memory_humanize}\n\t{exec_output_memory_humanize}"
 
-        return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}"
+        return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}\n\t{metadata_tips}"
 
 
 if __name__ == "__main__":

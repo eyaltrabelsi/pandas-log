@@ -28,6 +28,12 @@ NSMALLEST_MSG = "\t* Picked {n} smallest rows by columns ({cols})."
 HEAD_MSG = "\t* Picked the first {} rows."
 TAIL_MSG = "\t* Picked the last {} rows."
 
+
+# TIPS
+ITERROWS_TIPS = "\t*iterrows is not recommended, and in the majority of cases will have better alternatives"
+FILLNA_NO_NA_TIP = "\t* There are no nulls in this dataframe, if you are working on the entire dataset you can remove this operation."
+SHOULD_REDUCED_ROW_TIP = "\t* Number of rows didn't change, if you are working on the entire dataset you can remove this operation."
+
 # Others
 SORT_VALUES_MSG = "\t* Sorting by columns {by} in a {'ascending' if ascending else 'descending'} order."
 SORT_INDEX_MSG = "\t* Sorting by index in a {'ascending' if ascending else 'descending'} order."
@@ -85,9 +91,23 @@ def num_new_columns(input_df, output_df):
     return len(set(output_df.columns) - set(input_df.columns))
 
 
+def get_filter_rows_logs(input_df, output_df):
+    tips = ""
+    if is_same_rows(input_df, output_df):
+        logs = REMOVED_NO_ROWS_MSG
+        tips = SHOULD_REDUCED_ROW_TIP
+    else:
+        logs = FILTERED_ROWS_MSG.format(
+            rows_removed=rows_removed(input_df, output_df),
+            rows_removed_pct=rows_removed_pct(input_df, output_df),
+            rows_remaining=rows_remaining(output_df),
+        )
+    return logs, tips
+
+
 def log_default(output_df, input_df, *args, **kwargs):
     logs = [DEFAULT_STRATEGY_USED_MSG]
-
+    tips = ""
     if isinstance(output_df, pd.DataFrame):
         if not is_same_cols(input_df, output_df):
             logs.append(
@@ -106,7 +126,8 @@ def log_default(output_df, input_df, *args, **kwargs):
             )
     elif isinstance(output_df, pd.Series):
         logs.append(TRANSFORMED_TO_DF_MSG)
-    return "\n".join(logs)
+    logs = "\n".join(logs)
+    return logs, tips
 
 
 def log_drop(
@@ -122,27 +143,17 @@ def log_drop(
     *args,
     **kwargs,
 ):
-    logs = []
+    logs, tips = get_filter_rows_logs(input_df, output_df)
+    tips = ""
     if is_same_cols(input_df, output_df):
-        logs.append(REMOVED_NO_COLS_MSG)
+        logs += f"\n{REMOVED_NO_COLS_MSG}"
     else:
-        logs.append(
-            FILTERED_COLS_MSG.format(
-                cols_removed=cols_removed(input_df, output_df),
-                cols_remaining=cols_remaining(output_df),
-            )
+        msg = FILTERED_COLS_MSG.format(
+            cols_removed=cols_removed(input_df, output_df),
+            cols_remaining=cols_remaining(output_df),
         )
-    if is_same_rows(input_df, output_df):
-        logs.append(REMOVED_NO_ROWS_MSG)
-    else:
-        logs.append(
-            FILTERED_ROWS_MSG.format(
-                rows_removed=rows_removed(input_df, output_df),
-                rows_removed_pct=rows_removed_pct(input_df, output_df),
-                rows_remaining=rows_remaining(output_df),
-            )
-        )
-    return "\n".join(logs)
+        logs += f"\n{msg}"
+    return logs, tips
 
 
 def log_dropna(
@@ -155,31 +166,22 @@ def log_dropna(
     inplace=False,
     **kwargs,
 ):
-    logs = []
+    logs, tips = get_filter_rows_logs(input_df, output_df)
     if is_same_cols(input_df, output_df):
-        logs.append(REMOVED_NO_COLS_MSG)
+        logs += f"\n{REMOVED_NO_COLS_MSG}"
+        tips = SHOULD_REDUCED_ROW_TIP
     else:
-        logs.append(
-            FILTERED_COLS_MSG.format(
-                cols_removed=cols_removed(input_df, output_df),
-                cols_remaining=cols_remaining(output_df),
-            )
+        msg = FILTERED_COLS_MSG.format(
+            cols_removed=cols_removed(input_df, output_df),
+            cols_remaining=cols_remaining(output_df),
         )
-    if is_same_rows(input_df, output_df):
-        logs.append(REMOVED_NO_ROWS_MSG)
-    else:
-        logs.append(
-            FILTERED_ROWS_MSG.format(
-                rows_removed=rows_removed(input_df, output_df),
-                rows_removed_pct=rows_removed_pct(input_df, output_df),
-                rows_remaining=rows_remaining(output_df),
-            )
-        )
-    return "\n".join(logs)
+        logs += f"\n{msg}"
+    return logs, tips
 
 
 def log_assign(output_df, input_df, **kwargs):
     logs = []
+    tips = ""
     cols = kwargs.keys()
     if columns_changed(input_df, cols):
         logs.append(
@@ -193,22 +195,13 @@ def log_assign(output_df, input_df, **kwargs):
                 new_cols=", ".join(columns_added(input_df, cols))
             )
         )
-    return "\n".join(logs)
+    logs = "\n".join(logs)
+    return logs, tips
 
 
 def log_query(output_df, input_df, expr, inplace=False, *args, **kwargs):
-    if is_same_rows(input_df, output_df):
-        return REMOVED_NO_ROWS_MSG
-    else:
-        return FILTERED_ROWS_MSG.format(
-            rows_removed=rows_removed(input_df, output_df),
-            rows_removed_pct=rows_removed_pct(input_df, output_df),
-            rows_remaining=rows_remaining(output_df),
-        )
-
-
-def log_reset_index(output_df, input_df, **kwargs):
-    return ""
+    logs, tips = get_filter_rows_logs(input_df, output_df)
+    return logs, tips
 
 
 def log_sort_index(
@@ -224,7 +217,9 @@ def log_sort_index(
     by=None,
     **kwargs,
 ):
-    return SORT_INDEX_MSG.format(ascending)
+    logs = SORT_INDEX_MSG.format(ascending)
+    tips = ""
+    return logs, tips
 
 
 def log_sort_values(
@@ -238,15 +233,21 @@ def log_sort_values(
     na_position="last",
     **kwargs,
 ):
-    return SORT_VALUES_MSG.format(by, ascending)
+    logs = SORT_VALUES_MSG.format(by, ascending)
+    tips = ""
+    return logs, tips
 
 
 def log_tail(output_df, input_df, n=5, **kwargs):
-    return TAIL_MSG.format(n)
+    logs = TAIL_MSG.format(n)
+    tips = SHOULD_REDUCED_ROW_TIP if is_same_rows(input_df, output_df) else ""
+    return logs, tips
 
 
 def log_head(output_df, input_df, n=5, **kwargs):
-    return HEAD_MSG.format(n)
+    logs = HEAD_MSG.format(n)
+    tips = SHOULD_REDUCED_ROW_TIP if is_same_rows(input_df, output_df) else ""
+    return logs, tips
 
 
 def log_merge(
@@ -267,6 +268,7 @@ def log_merge(
     **kwargs,
 ):
     logs = []
+    tips = ""
     merged = input_df.original_merge(
         right,
         "outer",
@@ -296,7 +298,8 @@ def log_merge(
             )
         )
 
-    return "\n".join(logs)
+    logs = "\n".join(logs)
+    return logs, tips
 
 
 def log_join(
@@ -311,6 +314,7 @@ def log_join(
     **kwargs,
 ):
     logs = []
+    tips = ""
     merged = input_df.original_merge(
         other, "outer", on, input_df.index, other.index, indicator=True
     )
@@ -318,10 +322,7 @@ def log_join(
         JOIN_TYPE_MSG.format(how=how, **merged._merge.value_counts().to_dict())
     )
 
-    if is_same_rows(input_df, output_df):
-        logs.append(REMOVED_NO_ROWS_MSG)
-    else:
-        logs.append(JOIN_ROWS_MSG.format(output_rows=len(output_df)))
+    logs.append(get_filter_rows_logs(input_df, output_df))
     if not is_same_cols(input_df, output_df):
         logs.append(
             JOIN_NEW_COLS_MSG.format(
@@ -329,7 +330,8 @@ def log_join(
                 new_columns=str_new_columns(input_df, output_df),
             )
         )
-    return "\n".join(logs)
+    logs = "\n".join(logs)
+    return logs, tips
 
 
 def log_fillna(
@@ -343,12 +345,14 @@ def log_fillna(
     downcast=None,
     **kwargs,
 ):
-
+    tips = ""
     value = "empty string" if value == "" else value
     if num_of_na(input_df) == num_of_na(output_df):
-        return FILLNA_NO_NA_MSG
+        logs = FILLNA_NO_NA_MSG
+        tips = FILLNA_NO_NA_TIP
     else:
-        return FILLNA_WITHH_NA_MSG.format(num_of_na(input_df), value)
+        logs = FILLNA_WITHH_NA_MSG.format(num_of_na(input_df), value)
+    return logs, tips
 
 
 def log_sample(
@@ -363,15 +367,22 @@ def log_sample(
     *args,
     **kwargs,
 ):
-    return SAMPLE_MSG.format(output_rows=len(output_df))
+    logs = SAMPLE_MSG.format(output_rows=len(output_df))
+    tips = SHOULD_REDUCED_ROW_TIP if is_same_rows(input_df, output_df) else ""
+    return logs, tips
 
 
 def log_nlargest(output_df, input_df, n, columns, keep="first", **kwargs):
-    return NLARGEST_MSG.format(n=n, cols=columns)
+    # todo maybe wrong
+    logs = NLARGEST_MSG.format(n=n, cols=columns)
+    tips = SHOULD_REDUCED_ROW_TIP if is_same_rows(input_df, output_df) else ""
+    return logs, tips
 
 
 def log_nsmallest(output_df, input_df, n, columns, keep="first", **kwargs):
-    return NSMALLEST_MSG.format(n=n, cols=columns)
+    logs = NSMALLEST_MSG.format(n=n, cols=columns)
+    tips = SHOULD_REDUCED_ROW_TIP if is_same_rows(input_df, output_df) else ""
+    return logs, tips
 
 
 def log_groupby(
@@ -387,6 +398,7 @@ def log_groupby(
     observed=False,
     **kwargs,
 ):
+    tips = []
     group_by = ", ".join(by)
     groups = list(output_df.groups)
     groups_len = len(groups)
@@ -395,14 +407,25 @@ def log_groupby(
         if groups_len < 5
         else ", ".join(groups[:5]) + " and more"
     )
-    return GROUPBY_MSG.format(group_by, groups_len, groups_repr)
+    tips = ""
+    logs = GROUPBY_MSG.format(group_by, groups_len, groups_repr)
+    return logs, tips
+
+
+def log__iterrows(output_df, input_df):
+    tips = ITERROWS_TIPS
+    logs = ""
+    return logs, tips
 
 
 def log___getitem__(output_df, input_df, key, *args, **kwargs):
     logs = []
-    # TODO Naive handle of __getitem__ which return series
+    tips = ""
+
     if isinstance(key, str):
-        return ""
+        # Naive handle of __getitem__ which return series
+        logs = TRANSFORMED_TO_DF_MSG
+        return logs, tips
 
     if not is_same_cols(input_df, output_df):
         logs.append(
@@ -419,8 +442,11 @@ def log___getitem__(output_df, input_df, key, *args, **kwargs):
                 rows_remaining=rows_remaining(output_df),
             )
         )
-    return "\n".join(logs)
+    logs = "\n".join(logs)
+    return logs, tips
 
+
+# TODO add tip on types+cardinality
 
 if __name__ == "__main__":
     pass
