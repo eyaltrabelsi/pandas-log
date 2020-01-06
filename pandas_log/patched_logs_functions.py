@@ -199,6 +199,13 @@ def log_assign(output_df, input_df, **kwargs):
     return logs, tips
 
 
+def log___setitem__(output_df, input_df, key, value, **kwargs):
+    if isinstance(key, str):
+        # Only setting one column so can just use the assign logger as is
+        kwargs[key] = value
+        return log_assign(output_df, input_df, **kwargs)
+
+
 def log_query(output_df, input_df, expr, inplace=False, *args, **kwargs):
     logs, tips = get_filter_rows_logs(input_df, output_df)
     return logs, tips
