@@ -203,7 +203,12 @@ def log___setitem__(output_df, input_df, key, value, **kwargs):
     if isinstance(key, str):
         # Only setting one column so can just use the assign logger as is
         kwargs[key] = value
-        return log_assign(output_df, input_df, **kwargs)
+    elif isinstance(key, list):
+        # This would be kind of complicated but since we don't actually use the values in kwargs we can just
+        # add the new columns as keys each with the full set of assigned values (as a placeholder)
+        for subkey in key:
+            kwargs[subkey] = value
+    return log_assign(output_df, input_df, **kwargs)
 
 
 def log_query(output_df, input_df, expr, inplace=False, *args, **kwargs):
