@@ -108,9 +108,10 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
         if settings.COPY_OK:
             # If we're ok to make copies, copy the input_df so that we can compare against the output of inplace methods
             try:
-                original_input_df = getattr(input_df, settings.ORIGINAL_METHOD_PREFIX+'copy')()
+                # Will hit infinite recursion if we use the patched copy method so use the original
+                original_input_df = getattr(input_df, settings.ORIGINAL_METHOD_PREFIX+'copy')(deep=True)
             except AttributeError:
-                original_input_df = input_df.copy()
+                original_input_df = input_df.copy(deep=True)
         output_df, execution_stats = get_execution_stats(
             cls, fn, input_df, fn_args, fn_kwargs
         )
