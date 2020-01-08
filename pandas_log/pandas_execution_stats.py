@@ -10,17 +10,17 @@ from pandas_log import patched_logs_functions
 from pandas_log.aop_utils import (append_df_attr, calc_step_number,
                                   get_df_attr, get_pandas_func,
                                   get_signature_repr, set_df_attr,)
-from pandas_log.settings import (PANDAS_ADDITIONAL_METHODS_TO_OVERIDE,
-                                 PATCHED_LOG_METHOD_PREFIX,)
+from pandas_log.settings import (DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE,
+                                 PATCHED_LOG_METHOD_PREFIX, )
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import humanize
 
 
-def get_execution_stats(fn, input_df, fn_args, fn_kwargs):
+def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs):
     start = time()
-    output_df = get_pandas_func(fn)(input_df, *fn_args, **fn_kwargs)
+    output_df = get_pandas_func(cls, fn)(input_df, *fn_args, **fn_kwargs)
     exec_time = time() - start
     exec_time_pretty = humanize.naturaldelta(exec_time)
     if exec_time_pretty == "a moment":
@@ -44,6 +44,7 @@ class StepStats:
     def __init__(
         self,
         execution_stats,
+        cls,
         fn,
         fn_args,
         fn_kwargs,
@@ -53,6 +54,7 @@ class StepStats:
     ):
         """ Constructor
             :param execution_stats: execution_stats of the pandas operation both in time and memory
+            :param cls: The calling object's pandas class
             :param fn: The original pandas method
             :param fn_args: The original pandas method args
             :param fn_kwargs: The original pandas method kwargs
@@ -63,6 +65,7 @@ class StepStats:
 
         self.execution_stats = execution_stats
         self.full_signature = full_signature
+        self.cls = cls
         self.fn = fn
         self.fn_args = fn_args
         self.fn_kwargs = fn_kwargs
@@ -94,7 +97,7 @@ class StepStats:
 
         if (
             verbose
-            or self.fn.__name__ not in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+            or self.fn.__name__ not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
         ):
             print(self)
 
@@ -117,11 +120,11 @@ class StepStats:
     def __repr__(self):
         # Step title
         func_sig = get_signature_repr(
-            self.fn, self.fn_args, self.full_signature
+            self.cls, self.fn, self.fn_args, self.full_signature
         )
         step_number = (
             "X"
-            if self.fn.__name__ in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+            if self.fn.__name__ in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
             else self.execution_stats.step_number
         )
         step_title = f"{step_number}) {func_sig}"

@@ -1,4 +1,8 @@
 import pandas as pd
+import numpy as np
+
+# Values messages
+ALTERED_VALUES_MSG = "\t* Changed {values_changed} values, {values_unchanged} values were not changed."
 
 # Rows messages
 REMOVED_NO_ROWS_MSG = "\t* No change in number of rows of input df."
@@ -365,6 +369,70 @@ def log_fillna(
     else:
         logs = FILLNA_WITHH_NA_MSG.format(num_of_na(input_df), value)
     return logs, tips
+
+
+def log_mask(
+    output_df,
+    input_df,
+    cond,
+    other=np.nan,
+    inplace=False,
+    axis=None,
+    level=None,
+    errors='raise',
+    try_cast=False,
+    *args,
+    **kwargs
+):
+    values_changed = ((output_df != input_df) & ~(output_df.isnull() & input_df.isnull())).sum()
+    if isinstance(input_df, pd.DataFrame):
+        # We only summed once so values_changed will be a series, so we sum again
+        values_changed = values_changed.sum()
+        values_unchanged = (input_df.shape[0] * input_df.shape[1]) - values_changed
+    elif isinstance(input_df, pd.Series):
+        values_unchanged = len(output_df) - values_changed
+    logs = []
+    logs.append(ALTERED_VALUES_MSG.format(values_changed=values_changed, values_unchanged=values_unchanged))
+    if isinstance(cond, pd.Series) and isinstance(input_df, pd.Series):
+        # Calculate the values for which the condition was true but the value didn't change only for this simplest case,
+        # where we can just & the two series
+        true_but_unchanged = (cond & (output_df == input_df)).sum()
+        if true_but_unchanged > 0:
+            logs.append("\t* {} rows met the masking condition and already had the masking value.".format(
+                true_but_unchanged
+            ))
+    logs = '\n'.join(logs)
+    tips = ''
+    return logs, tips
+
+
+def log_where(
+    output_df,
+    input_df,
+    cond,
+    other=np.nan,
+    inplace=False,
+    axis=None,
+    level=None,
+    errors='raise',
+    try_cast=False,
+    *args,
+    **kwargs
+):
+    return log_mask(
+        output_df,
+        input_df,
+        ~cond,  # Important
+        other=np.nan,
+        inplace=False,
+        axis=None,
+        level=None,
+        errors='raise',
+        try_cast=False,
+        *args,
+        **kwargs
+    )
+
 
 
 def log_sample(

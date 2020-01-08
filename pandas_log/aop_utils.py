@@ -4,7 +4,7 @@ from inspect import signature
 import pandas as pd
 
 from pandas_log import settings
-from pandas_log.settings import PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+from pandas_log.settings import DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
 
 
 def set_df_attr(df, attr_name, attr_value):
@@ -40,20 +40,22 @@ def get_df_attr(df, attr_name, default_val):
     return df.__dict__.get(attr_name, default_val)
 
 
-def get_pandas_func(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def get_pandas_func(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     """ Get original pandas method
 
+        :param cls: pandas class
         :param func: pandas method name
         :param prefix: the prefix used to keep original method
         :return: Original pandas method
     """
 
-    return getattr(pd.DataFrame, f"{prefix}{func.__name__}")
+    return getattr(cls, f"{prefix}{func.__name__}")
 
 
-def get_signature_repr(fn, args, full_signature=True):
+def get_signature_repr(cls, fn, args, full_signature=True):
     """ Get the signature for the original pandas method with actual values
 
+        :param cls: the pandas class
         :param fn: The pandas method
         :param args: The arguments used when it was applied
         :return: string representation of the signature for the applied pandas method
@@ -66,7 +68,7 @@ def get_signature_repr(fn, args, full_signature=True):
         return [
             param_value if full_signature else param_name
             for param_name, param_value in signature(
-                get_pandas_func(fn)
+                get_pandas_func(cls, fn)
             ).parameters.items()
             if param_name not in ("kwargs", "self")
         ]
@@ -106,7 +108,7 @@ def restore_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     setattr(pd.DataFrame, func.replace(prefix, ""), original_method)
 
 
-def keep_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def keep_pandas_func_copy(cl, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     """ Saved copy of the pandas method before it overridden
 
         :param func: pandas method name
@@ -114,8 +116,8 @@ def keep_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
         :return: None
     """
 
-    original_method = getattr(pd.DataFrame, func)
-    setattr(pd.DataFrame, f"{prefix}{func}", original_method)
+    original_method = getattr(cl, func)
+    setattr(cl, f"{prefix}{func}", original_method)
 
 
 def calc_step_number(method_name, input_df):
@@ -124,7 +126,7 @@ def calc_step_number(method_name, input_df):
     if step_number:
         step_number = step_number[-1].execution_stats.step_number
 
-    if method_name not in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE:
+    if method_name not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE:
         step_number += 1
     return step_number
 

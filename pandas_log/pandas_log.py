@@ -65,29 +65,36 @@ def auto_enable(verbose=False, silent=False, full_signature=True):
     if ALREADY_ENABLED:
         return
 
-    settings.PANDAS_METHODS_TO_OVERIDE.extend(
-        settings.PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+    settings.DATAFRAME_METHODS_TO_OVERIDE.extend(
+        settings.DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
     )
 
     # Suppressing warning of the fact we override pandas functions.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         for func in dir(pd.DataFrame):
-            if func in settings.PANDAS_METHODS_TO_OVERIDE:
-                keep_pandas_func_copy(func)
+            if func in settings.DATAFRAME_METHODS_TO_OVERIDE:
+                keep_pandas_func_copy(pd.DataFrame, func)
                 create_overide_pandas_func(
-                    func, verbose, silent, full_signature
+                    pd.DataFrame, func, verbose, silent, full_signature
+                )
+        for func in dir(pd.Series):
+            if func in settings.SERIES_METHODS_TO_OVERIDE:
+                keep_pandas_func_copy(pd.Series, func)
+                create_overide_pandas_func(
+                    pd.Series, func, verbose, silent, full_signature
                 )
     ALREADY_ENABLED = True
 
 
-def create_overide_pandas_func(func, verbose, silent, full_signature):
+def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
     """ Create overridden pandas method dynamically with
         additional logging using DataFrameLogger
 
-        Note: if we extracting _overide_dataframe_method outside we need to implement decorator like here
+        Note: if we extracting _overide_pandas_method outside we need to implement decorator like here
               https://stackoverflow.com/questions/10176226/how-do-i-pass-extra-arguments-to-a-python-decorator
 
+        :param cls: pandas class for which the method should be overriden
         :param func: pandas method name to be overridden
         :param silent: Whether additional the statistics get printed
         :param full_signature: adding additional information to function signature
@@ -99,11 +106,12 @@ def create_overide_pandas_func(func, verbose, silent, full_signature):
     ):
 
         output_df, execution_stats = get_execution_stats(
-            fn, input_df, fn_args, fn_kwargs
+            cls, fn, input_df, fn_args, fn_kwargs
         )
 
         step_stats = StepStats(
             execution_stats,
+            cls,
             fn,
             fn_args,
             fn_kwargs,
@@ -119,8 +127,12 @@ def create_overide_pandas_func(func, verbose, silent, full_signature):
 
         return output_df
 
-    def _overide_dataframe_method(fn):
-        @pf.register_dataframe_method
+    def _overide_pandas_method(fn):
+        if cls == pd.DataFrame:
+            register_method_wrapper = pf.register_dataframe_method
+        elif cls == pd.Series:
+            register_method_wrapper = pf.register_series_method
+        @register_method_wrapper
         @wraps(fn)
         def wrapped(*args, **fn_kwargs):
 
@@ -139,7 +151,7 @@ def create_overide_pandas_func(func, verbose, silent, full_signature):
         return wrapped
 
     return exec(
-        f"@_overide_dataframe_method\ndef {func}(df, *args, **kwargs): pass"
+        f"@_overide_pandas_method\ndef {func}(df, *args, **kwargs): pass"
     )
 
 
