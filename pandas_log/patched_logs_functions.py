@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 
+from pandas_log import settings
+
+
 # Values messages
 ALTERED_VALUES_MSG = "\t* Changed {values_changed} values, {values_unchanged} values were not changed."
 
@@ -95,6 +98,17 @@ def num_new_columns(input_df, output_df):
     return len(set(output_df.columns) - set(input_df.columns))
 
 
+def num_values_changed(input_obj, output_obj):
+    values_changed = ((output_obj != input_obj) & ~(output_obj.isnull() & input_obj.isnull())).sum()
+    if isinstance(input_obj, pd.DataFrame):
+        # We only summed once so values_changed will be a series, so we sum again
+        values_changed = values_changed.sum()
+        values_unchanged = (input_obj.shape[0] * input_obj.shape[1]) - values_changed
+    elif isinstance(input_obj, pd.Series):
+        values_unchanged = len(output_obj) - values_changed
+    return values_changed, values_unchanged
+
+
 def get_filter_rows_logs(input_df, output_df):
     tips = ""
     if is_same_rows(input_df, output_df):
@@ -187,13 +201,26 @@ def log_assign(output_df, input_df, **kwargs):
     logs = []
     tips = ""
     cols = kwargs.keys()
-    if columns_changed(input_df, cols):
-        logs.append(
-            ASSIGN_EXISTING_MSG.format(
-                existing_cols=", ".join(columns_changed(input_df, cols))
+    changed_cols = columns_changed(input_df, cols)
+    added_cols = columns_added(input_df, cols)
+    if changed_cols:
+        if settings.COPY_OK:
+            # If copying is ok, we can check how many values actually changed
+            for col in changed_cols:
+                values_changed, values_unchanged = num_values_changed(input_df[col], output_df[col])
+                logs.append('\t* {}: {}'.format(col, ALTERED_VALUES_MSG.format(
+                    values_changed=values_changed, values_unchanged=values_unchanged
+                )[3:]))  # [3:] to strip the "\t* " from the altered values message
+        else:
+            # Otherwise just indicated which columns changed
+            # (Doing the above calculation would always say zero values changed in this case, since if copying isn't
+            # ok then input_df and output_df point to the same object)
+            logs.append(
+                ASSIGN_EXISTING_MSG.format(
+                    existing_cols=", ".join(changed_cols)
+                )
             )
-        )
-    if columns_added(input_df, cols):
+    if added_cols:
         logs.append(
             ASSIGN_NEW_MSG.format(
                 new_cols=", ".join(columns_added(input_df, cols))
@@ -384,13 +411,7 @@ def log_mask(
     *args,
     **kwargs
 ):
-    values_changed = ((output_df != input_df) & ~(output_df.isnull() & input_df.isnull())).sum()
-    if isinstance(input_df, pd.DataFrame):
-        # We only summed once so values_changed will be a series, so we sum again
-        values_changed = values_changed.sum()
-        values_unchanged = (input_df.shape[0] * input_df.shape[1]) - values_changed
-    elif isinstance(input_df, pd.Series):
-        values_unchanged = len(output_df) - values_changed
+    values_changed, values_unchanged = num_values_changed(input_df, output_df)
     logs = []
     logs.append(ALTERED_VALUES_MSG.format(values_changed=values_changed, values_unchanged=values_unchanged))
     if isinstance(cond, pd.Series) and isinstance(input_df, pd.Series):

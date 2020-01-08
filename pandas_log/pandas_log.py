@@ -105,9 +105,22 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
         fn, fn_args, fn_kwargs, input_df, full_signature, silent, verbose
     ):
 
+        if settings.COPY_OK:
+            # If we're ok to make copies, copy the input_df so that we can compare against the output of inplace methods
+            try:
+                original_input_df = getattr(input_df, settings.ORIGINAL_METHOD_PREFIX+'copy')()
+            except AttributeError:
+                original_input_df = input_df.copy()
         output_df, execution_stats = get_execution_stats(
             cls, fn, input_df, fn_args, fn_kwargs
         )
+        if output_df is None:
+            # The operation was strictly in place so we just call the dataframe the output_df as well
+            output_df = input_df
+        if settings.COPY_OK:
+            # If this isn't true and the method was strictly inplace, input_df and output_df will just
+            # point to the same object
+            input_df = original_input_df
 
         step_stats = StepStats(
             execution_stats,
@@ -124,7 +137,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
             output_df, pd.Series
         ):
             step_stats.persist_execution_stats()
-
+        # Don't think there's any garbage collection we should do manually?
         return output_df
 
     def _overide_pandas_method(fn):
