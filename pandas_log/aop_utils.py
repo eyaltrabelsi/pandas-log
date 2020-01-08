@@ -82,7 +82,7 @@ def get_signature_repr(cls, fn, args, full_signature=True):
             )
             res = (
                 param_name
-                if isinstance(arg_value, pd.DataFrame)
+                if isinstance(arg_value, pd.DataFrame) or isinstance(arg_value, pd.Series)
                 else f"{param_name}={arg_value}"
             )
         return res
