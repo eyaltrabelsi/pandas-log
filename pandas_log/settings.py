@@ -60,8 +60,7 @@ DATAFRAME_METHODS_TO_OVERIDE = [
     "min",
     "mod",
     "mode",
-    "std",
-    "loc"
+    "std"
 ]
 SERIES_METHODS_TO_OVERIDE = [
     "mask",
