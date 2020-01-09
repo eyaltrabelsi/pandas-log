@@ -88,7 +88,7 @@ class StepStats:
         set_df_attr(self.output_df, "execution_history", prev_exec_history)
         append_df_attr(self.output_df, "execution_history", self)
 
-    def log_stats_if_needed(self, silent, verbose):
+    def log_stats_if_needed(self, silent, verbose, copy_ok):
 
         from pandas_log.pandas_log import ALREADY_ENABLED
 
@@ -99,10 +99,11 @@ class StepStats:
             verbose
             or self.fn.__name__ not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
         ):
-            print(self)
+            print(self.__repr__(copy_ok=copy_ok))
 
-    def get_logs_for_specifc_method(self):
+    def get_logs_for_specifc_method(self, copy_ok=True):
         self.fn_kwargs["kwargs"] = self.fn_kwargs.copy()
+        self.fn_kwargs['copy_ok'] = copy_ok
         log_method = getattr(patched_logs_functions, "log_default")
         with suppress(AttributeError):
             log_method = getattr(
@@ -117,7 +118,7 @@ class StepStats:
     def _repr_html_(self):
         pass
 
-    def __repr__(self):
+    def __repr__(self, copy_ok=True):
         # Step title
         func_sig = get_signature_repr(
             self.cls, self.fn, self.fn_args, self.full_signature
@@ -130,7 +131,7 @@ class StepStats:
         step_title = f"{step_number}) {func_sig}"
 
         # Step Metadata stats
-        logs, tips = self.get_logs_for_specifc_method()
+        logs, tips = self.get_logs_for_specifc_method(copy_ok=copy_ok)
         metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
         metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
 

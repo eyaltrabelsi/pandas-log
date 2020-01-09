@@ -200,11 +200,11 @@ def log_dropna(
 def log_assign(output_df, input_df, **kwargs):
     logs = []
     tips = ""
-    cols = kwargs.keys()
+    cols = [key for key in kwargs.keys() if key not in ['kwargs', 'copy_ok']]
     changed_cols = columns_changed(input_df, cols)
     added_cols = columns_added(input_df, cols)
     if changed_cols:
-        if settings.COPY_OK:
+        if kwargs['copy_ok']:
             # If copying is ok, we can check how many values actually changed
             for col in changed_cols:
                 values_changed, values_unchanged = num_values_changed(input_df[col], output_df[col])

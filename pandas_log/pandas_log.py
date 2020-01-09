@@ -36,7 +36,7 @@ def auto_disable():
 
 
 @contextmanager
-def enable(verbose=False, silent=False, full_signature=True):
+def enable(verbose=False, silent=False, full_signature=True, copy_ok=True):
     """ Adds the additional logging functionality (statistics) to pandas methods only for the scope of this
         context manager.
 
@@ -44,21 +44,23 @@ def enable(verbose=False, silent=False, full_signature=True):
                         For example: when a dataframe being copied
         :param silent: Whether additional the statistics get printed
         :param full_signature: adding additional information to function signature
+        :param copy_ok: whether the dataframe is allowed to be copied to calculate more informative metadata logs
         :return: None
     """
 
-    auto_enable(verbose, silent, full_signature)
+    auto_enable(verbose, silent, full_signature, copy_ok)
     yield
     auto_disable()
 
 
-def auto_enable(verbose=False, silent=False, full_signature=True):
+def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True):
     """ Adds the additional logging functionality (statistics) to pandas methods.
 
         :param verbose: Whether some inner functions should be recorded as well.
                         For example: when a dataframe being copied
         :param silent: Whether additional the statistics get printed
         :param full_signature: adding additional information to function signature
+        :param copy_ok: whether the dataframe is allowed to be copied to calculate more informative metadata logs
         :return: None
     """
     global ALREADY_ENABLED
@@ -76,18 +78,18 @@ def auto_enable(verbose=False, silent=False, full_signature=True):
             if func in settings.DATAFRAME_METHODS_TO_OVERIDE:
                 keep_pandas_func_copy(pd.DataFrame, func)
                 create_overide_pandas_func(
-                    pd.DataFrame, func, verbose, silent, full_signature
+                    pd.DataFrame, func, verbose, silent, full_signature, copy_ok
                 )
         for func in dir(pd.Series):
             if func in settings.SERIES_METHODS_TO_OVERIDE:
                 keep_pandas_func_copy(pd.Series, func)
                 create_overide_pandas_func(
-                    pd.Series, func, verbose, silent, full_signature
+                    pd.Series, func, verbose, silent, full_signature, copy_ok
                 )
     ALREADY_ENABLED = True
 
 
-def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
+def create_overide_pandas_func(cls, func, verbose, silent, full_signature, copy_ok):
     """ Create overridden pandas method dynamically with
         additional logging using DataFrameLogger
 
@@ -98,6 +100,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
         :param func: pandas method name to be overridden
         :param silent: Whether additional the statistics get printed
         :param full_signature: adding additional information to function signature
+        :param copy_ok: whether the dataframe is allowed to be copied to calculate more informative metadata logs
         :return: the same function with additional logging capabilities
     """
 
@@ -105,7 +108,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
         fn, fn_args, fn_kwargs, input_df, full_signature, silent, verbose
     ):
 
-        if settings.COPY_OK:
+        if copy_ok:
             # If we're ok to make copies, copy the input_df so that we can compare against the output of inplace methods
             try:
                 # Will hit infinite recursion if we use the patched copy method so use the original
@@ -118,7 +121,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
         if output_df is None:
             # The operation was strictly in place so we just call the dataframe the output_df as well
             output_df = input_df
-        if settings.COPY_OK:
+        if copy_ok:
             # If this isn't true and the method was strictly inplace, input_df and output_df will just
             # point to the same object
             input_df = original_input_df
@@ -133,7 +136,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature):
             input_df,
             output_df,
         )
-        step_stats.log_stats_if_needed(silent, verbose)
+        step_stats.log_stats_if_needed(silent, verbose, copy_ok)
         if isinstance(output_df, pd.DataFrame) or isinstance(
             output_df, pd.Series
         ):
