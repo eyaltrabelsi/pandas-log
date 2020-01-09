@@ -345,6 +345,17 @@ def log_merge(
     return logs, tips
 
 
+def log_applymap(
+    output_df,
+    input_df,
+    func,
+    **kwargs
+):
+    values_changed, values_unchanged = num_values_changed(input_df, output_df)
+    log = ALTERED_VALUES_MSG.format(values_changed=values_changed, values_unchanged=values_unchanged)
+    return log, ""
+
+
 def log_join(
     output_df,
     input_df,
