@@ -510,15 +510,10 @@ def log_groupby(
     observed=False,
     **kwargs,
 ):
-    tips = []
-    group_by = ", ".join(by)
+    group_by = str(by)
     groups = list(output_df.groups)
     groups_len = len(groups)
-    groups_repr = (
-        ", ".join(groups)
-        if groups_len < 5
-        else ", ".join(groups[:5]) + " and more"
-    )
+    groups_repr = (",".join(['\n\t\t' + str(x) for x in groups[:5]]) + ",\n\t  and more")
     tips = ""
     logs = GROUPBY_MSG.format(group_by, groups_len, groups_repr)
     return logs, tips
