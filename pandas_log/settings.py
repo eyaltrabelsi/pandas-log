@@ -1,6 +1,6 @@
 ORIGINAL_METHOD_PREFIX = "original_"
 PATCHED_LOG_METHOD_PREFIX = "log_"
-DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE = ["copy", "reset_index", "__getitem__"]
+DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE = ["copy", "reset_index", "__getitem__", "__setitem__"]
 DATAFRAME_METHODS_TO_OVERIDE = [
     "query",
     "drop",
@@ -59,8 +59,7 @@ DATAFRAME_METHODS_TO_OVERIDE = [
     "min",
     "mod",
     "mode",
-    "std",
-    "__setitem__"
+    "std"
 ]
 SERIES_METHODS_TO_OVERIDE = [
     "mask",
