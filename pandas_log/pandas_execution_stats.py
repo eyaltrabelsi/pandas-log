@@ -18,7 +18,7 @@ with warnings.catch_warnings():
     import humanize
 
 
-def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs):
+def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs, calculate_memory):
     start = time()
     output_df = get_pandas_func(cls, fn)(input_df, *fn_args, **fn_kwargs)
     exec_time = time() - start
@@ -27,8 +27,8 @@ def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs):
         exec_time_pretty = f"{round(exec_time,6)} seconds"
     step_number = calc_step_number(fn.__name__, input_df)
 
-    input_memory_size = StepStats.calc_df_series_memory(input_df)
-    output_memory_size = StepStats.calc_df_series_memory(output_df)
+    input_memory_size = StepStats.calc_df_series_memory(input_df) if calculate_memory else None
+    output_memory_size = StepStats.calc_df_series_memory(output_df) if calculate_memory else None
 
     ExecutionStats = namedtuple(
         "ExecutionStats",
@@ -139,9 +139,13 @@ class StepStats:
         exec_time_humanize = (
             f"* Execution time: Step Took {self.execution_stats.exec_time}."
         )
-        exec_input_memory_humanize = f"* Input Dataframe size is {self.execution_stats.input_memory_size}."
-        exec_output_memory_humanize = f"* Output Dataframe size is {self.execution_stats.output_memory_size}."
-        execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_time_humanize}\n\t{exec_input_memory_humanize}\n\t{exec_output_memory_humanize}"
+        exec_stats_raw = [exec_time_humanize]
+        if self.execution_stats.input_memory_size is not None:
+            exec_stats_raw.append(f"* Input Dataframe size is {self.execution_stats.input_memory_size}.")
+        if self.execution_stats.output_memory_size is not None:
+            exec_stats_raw.append(f"* Output Dataframe size is {self.execution_stats.output_memory_size}.")
+        exec_stats_raw_str = '\n\t'.join(exec_stats_raw)
+        execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
 
         return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}\n\t{metadata_tips}"
 
