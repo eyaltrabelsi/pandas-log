@@ -42,7 +42,7 @@ FILLNA_NO_NA_TIP = "\t* There are no nulls in this dataframe, if you are working
 SHOULD_REDUCED_ROW_TIP = "\t* Number of rows didn't change, if you are working on the entire dataset you can remove this operation."
 
 # Others
-SORT_VALUES_MSG = "\t* Sorting by columns {by} in a {'ascending' if ascending else 'descending'} order."
+SORT_VALUES_MSG = "\t* Sorting by columns {} in a {} order."
 SORT_INDEX_MSG = "\t* Sorting by index in a {'ascending' if ascending else 'descending'} order."
 DEFAULT_STRATEGY_USED_MSG = (
     "\t* Using default strategy (some metric might not be relevant)."
@@ -146,6 +146,9 @@ def log_default(output_df, input_df, *args, **kwargs):
         logs.append(TRANSFORMED_TO_DF_MSG)
     logs = "\n".join(logs)
     return logs, tips
+
+def log_no_message(output_df, input_df, *args, **kwargs):
+    return '', ''
 
 
 def log_drop(
@@ -276,7 +279,7 @@ def log_sort_values(
     na_position="last",
     **kwargs,
 ):
-    logs = SORT_VALUES_MSG.format(by, ascending)
+    logs = SORT_VALUES_MSG.format(by, 'ascending' if ascending else 'descending')
     tips = ""
     return logs, tips
 

@@ -99,17 +99,26 @@ class StepStats:
             verbose
             or self.fn.__name__ not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
         ):
-            print(self.__repr__(copy_ok=copy_ok))
+            s = self.__repr__(verbose, copy_ok)
+            if s:
+                # If this method isn't patched and verbose is False, __repr__ will give an empty string, which
+                # we don't want to print
+                print(s)
 
-    def get_logs_for_specifc_method(self, copy_ok=True):
+    def get_logs_for_specifc_method(self, verbose, copy_ok):
         self.fn_kwargs["kwargs"] = self.fn_kwargs.copy()
         self.fn_kwargs['copy_ok'] = copy_ok
-        log_method = getattr(patched_logs_functions, "log_default")
-        with suppress(AttributeError):
+        try:
             log_method = getattr(
                 patched_logs_functions,
                 f"{PATCHED_LOG_METHOD_PREFIX}{self.fn.__name__}",
             )
+        except AttributeError:
+            # Method is listed as a method to override, but no patched function exists
+            if verbose:
+                log_method = getattr(patched_logs_functions, "log_default")
+            else:
+                log_method = getattr(patched_logs_functions, "log_no_message")
 
         log_method = partial(log_method, self.output_df, self.input_df)
         logs, tips = log_method(*self.fn_args, **self.fn_kwargs)
@@ -118,7 +127,7 @@ class StepStats:
     def _repr_html_(self):
         pass
 
-    def __repr__(self, copy_ok=True):
+    def __repr__(self, verbose, copy_ok):
         # Step title
         func_sig = get_signature_repr(
             self.cls, self.fn, self.fn_args, self.full_signature
@@ -131,23 +140,27 @@ class StepStats:
         step_title = f"{step_number}) {func_sig}"
 
         # Step Metadata stats
-        logs, tips = self.get_logs_for_specifc_method(copy_ok=copy_ok)
-        metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
-        metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
+        logs, tips = self.get_logs_for_specifc_method(verbose, copy_ok)
+        if not logs:
+            # This method isn't patched and verbose is false so we don't print the default
+            return ''
+        else:
+            metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
+            metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
 
-        # Step Execution stats
-        exec_time_humanize = (
-            f"* Execution time: Step Took {self.execution_stats.exec_time}."
-        )
-        exec_stats_raw = [exec_time_humanize]
-        if self.execution_stats.input_memory_size is not None:
-            exec_stats_raw.append(f"* Input Dataframe size is {self.execution_stats.input_memory_size}.")
-        if self.execution_stats.output_memory_size is not None:
-            exec_stats_raw.append(f"* Output Dataframe size is {self.execution_stats.output_memory_size}.")
-        exec_stats_raw_str = '\n\t'.join(exec_stats_raw)
-        execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
+            # Step Execution stats
+            exec_time_humanize = (
+                f"* Execution time: Step Took {self.execution_stats.exec_time}."
+            )
+            exec_stats_raw = [exec_time_humanize]
+            if self.execution_stats.input_memory_size is not None:
+                exec_stats_raw.append(f"* Input Dataframe size is {self.execution_stats.input_memory_size}.")
+            if self.execution_stats.output_memory_size is not None:
+                exec_stats_raw.append(f"* Output Dataframe size is {self.execution_stats.output_memory_size}.")
+            exec_stats_raw_str = '\n\t'.join(exec_stats_raw)
+            execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
 
-        return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}\n\t{metadata_tips}"
+            return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}\n\t{metadata_tips}"
 
 
 if __name__ == "__main__":
