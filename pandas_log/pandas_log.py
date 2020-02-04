@@ -5,6 +5,7 @@
 import warnings
 from contextlib import contextmanager
 from functools import wraps
+from copy import copy
 
 import pandas as pd
 import pandas_flavor as pf
@@ -51,6 +52,30 @@ def enable(verbose=False, silent=False, full_signature=True, copy_ok=True, calcu
     auto_enable(verbose, silent, full_signature, copy_ok, calculate_memory)
     yield
     auto_disable()
+
+
+@contextmanager
+def disable():
+    global ALREADY_ENABLED
+    if not ALREADY_ENABLED:
+        yield
+    else:
+        for func in dir(pd.DataFrame):
+            if func.startswith(settings.ORIGINAL_METHOD_PREFIX):
+                # We determine which functions are patched by which ones have an analogous method with
+                # the original method prefix
+                # Keep a copy of the patched one (which doesn't have a prefix)
+                keep_pandas_func_copy(pd.DataFrame, func[len(settings.ORIGINAL_METHOD_PREFIX):],
+                                      prefix=settings.PATCHED_LOG_METHOD_PREFIX)
+                # Restore the original
+                restore_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX)
+        ALREADY_ENABLED = False
+        yield
+        for func in dir(pd.DataFrame):
+            if func.startswith(settings.PATCHED_LOG_METHOD_PREFIX):
+                # Don't need to create another copy of the one with the original prefix bc we never erased it
+                restore_pandas_func_copy(func, prefix=settings.PATCHED_LOG_METHOD_PREFIX)
+        ALREADY_ENABLED = True
 
 
 def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, extras=True, calculate_memory=False):
