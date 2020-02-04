@@ -53,7 +53,7 @@ def enable(verbose=False, silent=False, full_signature=True, copy_ok=True, calcu
     auto_disable()
 
 
-def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, calculate_memory=False):
+def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, extras=True, calculate_memory=False):
     """ Adds the additional logging functionality (statistics) to pandas methods.
 
         :param verbose: Whether some inner functions should be recorded as well.
@@ -86,7 +86,13 @@ def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, 
                 create_overide_pandas_func(
                     pd.Series, func, verbose, silent, full_signature, copy_ok, calculate_memory
                 )
+    if extras:
+        enable_extras()
     ALREADY_ENABLED = True
+
+
+def enable_extras():
+    import pandas_log.extras
 
 
 def create_overide_pandas_func(cls, func, verbose, silent, full_signature, copy_ok, calculate_memory):
