@@ -64,9 +64,10 @@ def dq_check(df, percentiles=None, thorough=True):
                 print('scikit-learn is not installed, skipping outlier detection')
                 thorough_df = pd.DataFrame([])
             # For string columns, calculate how many have leading or trailing whitespace
-            edge_whitespace = strings.apply(lambda col: col.str.match(r'^\s+.*|.*\s+$', na=False).sum())
-            edge_whitespace = pd.DataFrame([edge_whitespace], index=['has_edge_whitespace'])
-            thorough_df = pd.concat([thorough_df, edge_whitespace], axis=1, sort=True)
+            if not strings.empty:
+                edge_whitespace = strings.apply(lambda col: col.str.match(r'^\s+.*|.*\s+$', na=False).sum())
+                edge_whitespace = pd.DataFrame([edge_whitespace], index=['has_edge_whitespace'])
+                thorough_df = pd.concat([thorough_df, edge_whitespace], axis=1, sort=True)
         else:
             thorough_df = pd.DataFrame([])
         # Concatenate all the results
@@ -79,7 +80,7 @@ def dq_check(df, percentiles=None, thorough=True):
         # Since we might be adding some rows that already existed, drop the duplicates
         # This isn't perfectly performant but it's a dataframe of like 10 rows so it won't be noticeable
         check = check.loc[~check.index.duplicated()]
-        percentile_indices = [ix for ix in check.index if ix.endswith('%')]
+        percentile_indices = [ix for ix in check.index if str(ix).endswith('%')]
         # Reorder the metrics in a way that's more intuitive
         check = check.reindex([
             'dtype',
