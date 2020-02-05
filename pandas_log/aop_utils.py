@@ -49,6 +49,7 @@ def get_pandas_func(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
         :return: Original pandas method
     """
 
+    _raise_on_bad_class(cls)
     return getattr(cls, f"{prefix}{func.__name__}")
 
 
@@ -60,6 +61,8 @@ def get_signature_repr(cls, fn, args, full_signature=True):
         :param args: The arguments used when it was applied
         :return: string representation of the signature for the applied pandas method
     """
+
+    _raise_on_bad_class(cls)
 
     def _get_bold_text(text):
         return f"\033[1m{text}\033[0m"
@@ -96,28 +99,38 @@ def get_signature_repr(cls, fn, args, full_signature=True):
     return f"{_get_bold_text(fn.__name__)}({args_vals}):"
 
 
-def restore_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def _raise_on_bad_class(cls):
+    implemented_classes = (pd.DataFrame, pd.Series)
+    if cls not in implemented_classes:
+        raise TypeError('cls must be one of {}'.format(implemented_classes))
+
+
+def restore_pandas_func_copy(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     """ Restore the original pandas method instead of overridden one
 
+        :param cls: class containing the method
         :param func: pandas method name
         :param prefix: the prefix used to keep original method
         :return: None
     """
 
-    original_method = getattr(pd.DataFrame, func)
-    setattr(pd.DataFrame, func.replace(prefix, ""), original_method)
+    _raise_on_bad_class(cls)
+    original_method = getattr(cls, func)
+    setattr(cls, func.replace(prefix, ""), original_method)
 
 
-def keep_pandas_func_copy(cl, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def keep_pandas_func_copy(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     """ Saved copy of the pandas method before it overridden
 
+        :param cls: class containing the method
         :param func: pandas method name
         :param prefix: the prefix used to keep original method
         :return: None
     """
 
-    original_method = getattr(cl, func)
-    setattr(cl, f"{prefix}{func}", original_method)
+    _raise_on_bad_class(cls)
+    original_method = getattr(cls, func)
+    setattr(cls, f"{prefix}{func}", original_method)
 
 
 def calc_step_number(method_name, input_df):

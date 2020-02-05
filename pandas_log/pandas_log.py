@@ -30,9 +30,10 @@ def auto_disable():
     if not ALREADY_ENABLED:
         return
 
-    for func in dir(pd.DataFrame):
-        if func.startswith(settings.ORIGINAL_METHOD_PREFIX):
-            restore_pandas_func_copy(func)
+    for cls in (pd.DataFrame, pd.Series):
+        for func in dir(cls):
+            if func.startswith(settings.ORIGINAL_METHOD_PREFIX):
+                restore_pandas_func_copy(cls, func)
     ALREADY_ENABLED = False
 
 
@@ -60,21 +61,23 @@ def disable():
     if not ALREADY_ENABLED:
         yield
     else:
-        for func in dir(pd.DataFrame):
-            if func.startswith(settings.ORIGINAL_METHOD_PREFIX):
-                # We determine which functions are patched by which ones have an analogous method with
-                # the original method prefix
-                # Keep a copy of the patched one (which doesn't have a prefix)
-                keep_pandas_func_copy(pd.DataFrame, func[len(settings.ORIGINAL_METHOD_PREFIX):],
-                                      prefix=settings.PATCHED_LOG_METHOD_PREFIX)
-                # Restore the original
-                restore_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX)
+        for cls in (pd.DataFrame, pd.Series):
+            for func in dir(cls):
+                if func.startswith(settings.ORIGINAL_METHOD_PREFIX):
+                    # We determine which functions are patched by which ones have an analogous method with
+                    # the original method prefix
+                    # Keep a copy of the patched one (which doesn't have a prefix)
+                    keep_pandas_func_copy(cls, func[len(settings.ORIGINAL_METHOD_PREFIX):],
+                                          prefix=settings.PATCHED_LOG_METHOD_PREFIX)
+                    # Restore the original
+                    restore_pandas_func_copy(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX)
         ALREADY_ENABLED = False
         yield
-        for func in dir(pd.DataFrame):
-            if func.startswith(settings.PATCHED_LOG_METHOD_PREFIX):
-                # Don't need to create another copy of the one with the original prefix bc we never erased it
-                restore_pandas_func_copy(func, prefix=settings.PATCHED_LOG_METHOD_PREFIX)
+        for cls in (pd.DataFrame, pd.Series):
+            for func in dir(cls):
+                if func.startswith(settings.PATCHED_LOG_METHOD_PREFIX):
+                    # Don't need to create another copy of the one with the original prefix bc we never erased it
+                    restore_pandas_func_copy(cls, func, prefix=settings.PATCHED_LOG_METHOD_PREFIX)
         ALREADY_ENABLED = True
 
 
