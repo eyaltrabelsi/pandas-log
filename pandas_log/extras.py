@@ -54,18 +54,19 @@ def dq_check(df, percentiles=None, thorough=True):
                     # Calculate 90th percentile and max of local outlier factor (smaller indicates more of an inlier)
                     # Only do 1D outlier detection for now
                     clf = LocalOutlierFactor()  # Use all default params
-                    clf.fit(df[col])
+                    clf.fit(col.values.reshape((len(df), 1)))
                     lof = clf.negative_outlier_factor_ * -1
                     lof_90 = percentile(lof, 90)
                     lof_max = max(lof)
-                    return pd.Series({'lof_90': lof_90, 'lof_max': lof_max})
+                    return pd.Series({'lof_p90': lof_90, 'lof_max': lof_max})
                 thorough_df = numerics.apply(local_outlier_scores)
             except ImportError:
+                print('scikit-learn is not installed, skipping outlier detection')
                 thorough_df = pd.DataFrame([])
             # For string columns, calculate how many have leading or trailing whitespace
             edge_whitespace = strings.apply(lambda col: col.str.match(r'^\s+.*|.*\s+$', na=False).sum())
             edge_whitespace = pd.DataFrame([edge_whitespace], index=['has_edge_whitespace'])
-            thorough_df = pd.concat([thorough_df, edge_whitespace], axis=1)
+            thorough_df = pd.concat([thorough_df, edge_whitespace], axis=1, sort=True)
         else:
             thorough_df = pd.DataFrame([])
         # Concatenate all the results
@@ -98,7 +99,7 @@ def dq_check(df, percentiles=None, thorough=True):
             'mode_freq',
             'min'] + percentile_indices + [
             'max',
-            'lof_90',
+            'lof_p90',
             'lof_max',
             'dt_min',
             'dt_max'
