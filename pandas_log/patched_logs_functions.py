@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import warnings
 
 from pandas_log import settings
 
@@ -48,6 +49,9 @@ DEFAULT_STRATEGY_USED_MSG = (
     "\t* Using default strategy (some metric might not be relevant)."
 )
 TRANSFORMED_TO_DF_MSG = "\t* After transformation we received Series"
+
+COPY_WARNING_MSG = "Some pandas logging may involve copying dataframes, which can be time-/memory-intensive. Consider passing" \
+           "copy_ok=False to the enable/auto_enable functions in pandas_log if issues arise."
 
 
 def rows_removed(input_df, output_df):
@@ -208,6 +212,7 @@ def log_assign(output_df, input_df, **kwargs):
     added_cols = columns_added(input_df, cols)
     if changed_cols:
         if kwargs['copy_ok']:
+            warnings.warn(COPY_WARNING_MSG)
             # If copying is ok, we can check how many values actually changed
             for col in changed_cols:
                 values_changed, values_unchanged = num_values_changed(input_df[col], output_df[col])
