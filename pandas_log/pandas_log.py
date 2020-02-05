@@ -55,32 +55,6 @@ def enable(verbose=False, silent=False, full_signature=True, copy_ok=True, calcu
     auto_disable()
 
 
-@contextmanager
-def disable():
-    global ALREADY_ENABLED
-    if not ALREADY_ENABLED:
-        yield
-    else:
-        for cls in (pd.DataFrame, pd.Series):
-            for func in dir(cls):
-                if func.startswith(settings.ORIGINAL_METHOD_PREFIX):
-                    # We determine which functions are patched by which ones have an analogous method with
-                    # the original method prefix
-                    # Keep a copy of the patched one (which doesn't have a prefix)
-                    keep_pandas_func_copy(cls, func[len(settings.ORIGINAL_METHOD_PREFIX):],
-                                          prefix=settings.PATCHED_LOG_METHOD_PREFIX)
-                    # Restore the original
-                    restore_pandas_func_copy(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX)
-        ALREADY_ENABLED = False
-        yield
-        for cls in (pd.DataFrame, pd.Series):
-            for func in dir(cls):
-                if func.startswith(settings.PATCHED_LOG_METHOD_PREFIX):
-                    # Don't need to create another copy of the one with the original prefix bc we never erased it
-                    restore_pandas_func_copy(cls, func, prefix=settings.PATCHED_LOG_METHOD_PREFIX)
-        ALREADY_ENABLED = True
-
-
 def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, extras=True, calculate_memory=False):
     """ Adds the additional logging functionality (statistics) to pandas methods.
 
