@@ -1,7 +1,7 @@
-import pandas as pd
-import numpy as np
 import warnings
 
+import numpy as np
+import pandas as pd
 
 # Values messages
 ALTERED_VALUES_MSG = "\t* Changed {values_changed} values, {values_unchanged} values were not changed."
@@ -12,8 +12,10 @@ FILTERED_ROWS_MSG = "\t* Removed {rows_removed} rows ({rows_removed_pct}%), {row
 
 # Cols messages
 REMOVED_NO_COLS_MSG = "\t* Removed no columns."
-FILTERED_COLS_MSG = "\t* Removed the following columns ({cols_removed}) now only have the following columns" \
-                    "({cols_remaining})."
+FILTERED_COLS_MSG = (
+    "\t* Removed the following columns ({cols_removed}) now only have the following columns"
+    "({cols_remaining})."
+)
 ASSIGN_EXISTING_MSG = "\t* The columns {existing_cols} were reassigned."
 ASSIGN_NEW_MSG = "\t* The columns {new_cols} were created."
 
@@ -26,8 +28,10 @@ FILLNA_WITHH_NA_MSG = "\t* Filled {} with {}."
 # Mege messages
 JOIN_ROWS_MSG = "\t* Number of rows changed, after join is {output_rows} rows."
 JOIN_NEW_COLS_MSG = "\t* Added {num_new_columns} columns ({new_columns})."
-JOIN_TYPE_MSG = "\t* Its a {how} join with the following cardinality:\n\t\t> rows only in left is {left_only}." \
-                "\n\t\t> rows only in right is {right_only}.\n\t\t> rows in both is {both}."
+JOIN_TYPE_MSG = (
+    "\t* Its a {how} join with the following cardinality:\n\t\t> rows only in left is {left_only}."
+    "\n\t\t> rows only in right is {right_only}.\n\t\t> rows in both is {both}."
+)
 
 # Pick messages
 SAMPLE_MSG = "\t* Picked random sample of {output_rows} rows."
@@ -39,10 +43,14 @@ TAIL_MSG = "\t* Picked the last {} rows."
 
 # TIPS
 ITERROWS_TIPS = "\t*iterrows is not recommended, and in the majority of cases will have better alternatives"
-FILLNA_NO_NA_TIP = "\t* There are no nulls in this dataframe, if you are working on the entire dataset you can " \
-                   "remove this operation."
-SHOULD_REDUCED_ROW_TIP = "\t* Number of rows didn't change, if you are working on the entire dataset you can remove " \
-                         "this operation."
+FILLNA_NO_NA_TIP = (
+    "\t* There are no nulls in this dataframe, if you are working on the entire dataset you can "
+    "remove this operation."
+)
+SHOULD_REDUCED_ROW_TIP = (
+    "\t* Number of rows didn't change, if you are working on the entire dataset you can remove "
+    "this operation."
+)
 
 # Others
 SORT_VALUES_MSG = "\t* Sorting by columns {} in a {} order."
@@ -52,8 +60,10 @@ DEFAULT_STRATEGY_USED_MSG = (
 )
 TRANSFORMED_TO_DF_MSG = "\t* After transformation we received Series"
 
-COPY_WARNING_MSG = "Some pandas logging may involve copying dataframes, which can be time-/memory-intensive. " \
-                   "Consider passing copy_ok=False to the enable/auto_enable functions in pandas_log if issues arise."
+COPY_WARNING_MSG = (
+    "Some pandas logging may involve copying dataframes, which can be time-/memory-intensive. "
+    "Consider passing copy_ok=False to the enable/auto_enable functions in pandas_log if issues arise."
+)
 
 
 def _stringify_list(l):
@@ -73,7 +83,9 @@ def rows_remaining(output_df):
 
 
 def cols_removed(input_df, output_df):
-    return ", ".join(_stringify_list(set(input_df.columns) - set(output_df.columns)))
+    return ", ".join(
+        _stringify_list(set(input_df.columns) - set(output_df.columns))
+    )
 
 
 def cols_remaining(output_df):
@@ -101,7 +113,9 @@ def num_of_na(df):
 
 
 def str_new_columns(input_df, output_df):
-    return ", ".join(_stringify_list(set(output_df.columns) - set(input_df.columns)))
+    return ", ".join(
+        _stringify_list(set(output_df.columns) - set(input_df.columns))
+    )
 
 
 def num_new_columns(input_df, output_df):
@@ -109,11 +123,15 @@ def num_new_columns(input_df, output_df):
 
 
 def num_values_changed(input_obj, output_obj):
-    values_changed = ((output_obj != input_obj) & ~(output_obj.isnull() & input_obj.isnull())).sum()
+    values_changed = (
+        (output_obj != input_obj) & ~(output_obj.isnull() & input_obj.isnull())
+    ).sum()
     if isinstance(input_obj, pd.DataFrame):
         # We only summed once so values_changed will be a series, so we sum again
         values_changed = values_changed.sum()
-        values_unchanged = (input_obj.shape[0] * input_obj.shape[1]) - values_changed
+        values_unchanged = (
+            input_obj.shape[0] * input_obj.shape[1]
+        ) - values_changed
     elif isinstance(input_obj, pd.Series):
         values_unchanged = len(output_obj) - values_changed
     return values_changed, values_unchanged
@@ -159,7 +177,7 @@ def log_default(output_df, input_df, *args, **kwargs):
 
 
 def log_no_message(output_df, input_df, *args, **kwargs):
-    return '', ''
+    return "", ""
 
 
 def log_drop(
@@ -214,18 +232,26 @@ def log_dropna(
 def log_assign(output_df, input_df, **kwargs):
     logs = []
     tips = ""
-    cols = [key for key in kwargs.keys() if key not in ['kwargs', 'copy_ok']]
+    cols = [key for key in kwargs.keys() if key not in ["kwargs", "copy_ok"]]
     changed_cols = columns_changed(input_df, cols)
     added_cols = columns_added(input_df, cols)
     if changed_cols:
-        if kwargs['copy_ok']:
+        if kwargs["copy_ok"]:
             warnings.warn(COPY_WARNING_MSG)
             # If copying is ok, we can check how many values actually changed
             for col in changed_cols:
-                values_changed, values_unchanged = num_values_changed(input_df[col], output_df[col])
-                logs.append('\t* {}: {}'.format(col, ALTERED_VALUES_MSG.format(
-                    values_changed=values_changed, values_unchanged=values_unchanged
-                )[3:]))  # [3:] to strip the "\t* " from the altered values message
+                values_changed, values_unchanged = num_values_changed(
+                    input_df[col], output_df[col]
+                )
+                logs.append(
+                    "\t* {}: {}".format(
+                        col,
+                        ALTERED_VALUES_MSG.format(
+                            values_changed=values_changed,
+                            values_unchanged=values_unchanged,
+                        )[3:],
+                    )
+                )  # [3:] to strip the "\t* " from the altered values message
         else:
             # Otherwise just indicated which columns changed
             # (Doing the above calculation would always say zero values changed in this case, since if copying isn't
@@ -291,7 +317,9 @@ def log_sort_values(
     na_position="last",
     **kwargs,
 ):
-    logs = SORT_VALUES_MSG.format(by, 'ascending' if ascending else 'descending')
+    logs = SORT_VALUES_MSG.format(
+        by, "ascending" if ascending else "descending"
+    )
     tips = ""
     return logs, tips
 
@@ -360,14 +388,11 @@ def log_merge(
     return logs, tips
 
 
-def log_applymap(
-    output_df,
-    input_df,
-    func,
-    **kwargs
-):
+def log_applymap(output_df, input_df, func, **kwargs):
     values_changed, values_unchanged = num_values_changed(input_df, output_df)
-    log = ALTERED_VALUES_MSG.format(values_changed=values_changed, values_unchanged=values_unchanged)
+    log = ALTERED_VALUES_MSG.format(
+        values_changed=values_changed, values_unchanged=values_unchanged
+    )
     return log, ""
 
 
@@ -432,24 +457,30 @@ def log_mask(
     inplace=False,
     axis=None,
     level=None,
-    errors='raise',
+    errors="raise",
     try_cast=False,
     *args,
-    **kwargs
+    **kwargs,
 ):
     values_changed, values_unchanged = num_values_changed(input_df, output_df)
     logs = []
-    logs.append(ALTERED_VALUES_MSG.format(values_changed=values_changed, values_unchanged=values_unchanged))
+    logs.append(
+        ALTERED_VALUES_MSG.format(
+            values_changed=values_changed, values_unchanged=values_unchanged
+        )
+    )
     if isinstance(cond, pd.Series) and isinstance(input_df, pd.Series):
         # Calculate the values for which the condition was true but the value didn't change only for this simplest case,
         # where we can just & the two series
         true_but_unchanged = (cond & (output_df == input_df)).sum()
         if true_but_unchanged > 0:
-            logs.append("\t* {} rows met the masking condition and already had the masking value.".format(
-                true_but_unchanged
-            ))
-    logs = '\n'.join(logs)
-    tips = ''
+            logs.append(
+                "\t* {} rows met the masking condition and already had the masking value.".format(
+                    true_but_unchanged
+                )
+            )
+    logs = "\n".join(logs)
+    tips = ""
     return logs, tips
 
 
@@ -461,10 +492,10 @@ def log_where(
     inplace=False,
     axis=None,
     level=None,
-    errors='raise',
+    errors="raise",
     try_cast=False,
     *args,
-    **kwargs
+    **kwargs,
 ):
     return log_mask(
         output_df,
@@ -474,10 +505,10 @@ def log_where(
         inplace=False,
         axis=None,
         level=None,
-        errors='raise',
+        errors="raise",
         try_cast=False,
         *args,
-        **kwargs
+        **kwargs,
     )
 
 
@@ -527,7 +558,9 @@ def log_groupby(
     group_by = str(by)
     groups = list(output_df.groups)
     groups_len = len(groups)
-    groups_repr = (",".join(['\n\t\t' + str(x) for x in groups[:5]]) + ",\n\t  and more")
+    groups_repr = (
+        ",".join(["\n\t\t" + str(x) for x in groups[:5]]) + ",\n\t  and more"
+    )
     tips = ""
     logs = GROUPBY_MSG.format(group_by, groups_len, groups_repr)
     return logs, tips

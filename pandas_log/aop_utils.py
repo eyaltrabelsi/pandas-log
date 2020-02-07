@@ -85,7 +85,8 @@ def get_signature_repr(cls, fn, args, full_signature=True):
             )
             res = (
                 param_name
-                if isinstance(arg_value, pd.DataFrame) or isinstance(arg_value, pd.Series)
+                if isinstance(arg_value, pd.DataFrame)
+                or isinstance(arg_value, pd.Series)
                 else f"{param_name}={arg_value}"
             )
         return res
@@ -102,10 +103,12 @@ def get_signature_repr(cls, fn, args, full_signature=True):
 def _raise_on_bad_class(cls):
     implemented_classes = (pd.DataFrame, pd.Series)
     if cls not in implemented_classes:
-        raise TypeError('cls must be one of {}'.format(implemented_classes))
+        raise TypeError("cls must be one of {}".format(implemented_classes))
 
 
-def restore_pandas_func_copy(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def restore_pandas_func_copy(
+    cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX
+):
     """ Restore the original pandas method instead of overridden one
 
         :param cls: class containing the method

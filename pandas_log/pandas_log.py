@@ -10,8 +10,10 @@ import pandas as pd
 import pandas_flavor as pf
 
 from pandas_log import settings
-from pandas_log.aop_utils import (keep_pandas_func_copy,
-                                  restore_pandas_func_copy,)
+from pandas_log.aop_utils import (
+    keep_pandas_func_copy,
+    restore_pandas_func_copy,
+)
 from pandas_log.pandas_execution_stats import StepStats, get_execution_stats
 
 __all__ = ["auto_enable", "auto_disable", "enable"]
@@ -37,7 +39,13 @@ def auto_disable():
 
 
 @contextmanager
-def enable(verbose=False, silent=False, full_signature=True, copy_ok=True, calculate_memory=False):
+def enable(
+    verbose=False,
+    silent=False,
+    full_signature=True,
+    copy_ok=True,
+    calculate_memory=False,
+):
     """ Adds the additional logging functionality (statistics) to pandas methods only for the scope of this
         context manager.
 
@@ -54,7 +62,14 @@ def enable(verbose=False, silent=False, full_signature=True, copy_ok=True, calcu
     auto_disable()
 
 
-def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, extras=True, calculate_memory=False):
+def auto_enable(
+    verbose=False,
+    silent=False,
+    full_signature=True,
+    copy_ok=True,
+    extras=True,
+    calculate_memory=False,
+):
     """ Adds the additional logging functionality (statistics) to pandas methods.
 
         :param verbose: Whether some inner functions should be recorded as well.
@@ -79,13 +94,25 @@ def auto_enable(verbose=False, silent=False, full_signature=True, copy_ok=True, 
             if func in settings.DATAFRAME_METHODS_TO_OVERIDE:
                 keep_pandas_func_copy(pd.DataFrame, func)
                 create_overide_pandas_func(
-                    pd.DataFrame, func, verbose, silent, full_signature, copy_ok, calculate_memory
+                    pd.DataFrame,
+                    func,
+                    verbose,
+                    silent,
+                    full_signature,
+                    copy_ok,
+                    calculate_memory,
                 )
         for func in dir(pd.Series):
             if func in settings.SERIES_METHODS_TO_OVERIDE:
                 keep_pandas_func_copy(pd.Series, func)
                 create_overide_pandas_func(
-                    pd.Series, func, verbose, silent, full_signature, copy_ok, calculate_memory
+                    pd.Series,
+                    func,
+                    verbose,
+                    silent,
+                    full_signature,
+                    copy_ok,
+                    calculate_memory,
                 )
     if extras:
         enable_extras()
@@ -96,7 +123,9 @@ def enable_extras():
     import pandas_log.extras
 
 
-def create_overide_pandas_func(cls, func, verbose, silent, full_signature, copy_ok, calculate_memory):
+def create_overide_pandas_func(
+    cls, func, verbose, silent, full_signature, copy_ok, calculate_memory
+):
     """ Create overridden pandas method dynamically with
         additional logging using DataFrameLogger
 
@@ -112,14 +141,24 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature, copy_
     """
 
     def _run_method_and_calc_stats(
-        fn, fn_args, fn_kwargs, input_df, full_signature, silent, verbose, copy_ok, calculate_memory
+        fn,
+        fn_args,
+        fn_kwargs,
+        input_df,
+        full_signature,
+        silent,
+        verbose,
+        copy_ok,
+        calculate_memory,
     ):
 
         if copy_ok:
             # If we're ok to make copies, copy the input_df so that we can compare against the output of inplace methods
             try:
                 # Will hit infinite recursion if we use the patched copy method so use the original
-                original_input_df = getattr(input_df, settings.ORIGINAL_METHOD_PREFIX+'copy')(deep=True)
+                original_input_df = getattr(
+                    input_df, settings.ORIGINAL_METHOD_PREFIX + "copy"
+                )(deep=True)
             except AttributeError:
                 original_input_df = input_df.copy(deep=True)
         output_df, execution_stats = get_execution_stats(
@@ -171,7 +210,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature, copy_
                 silent,
                 verbose,
                 copy_ok,
-                calculate_memory
+                calculate_memory,
             )
             return output_df
 

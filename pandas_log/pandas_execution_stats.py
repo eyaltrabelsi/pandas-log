@@ -6,18 +6,27 @@ from time import time
 import pandas as pd
 
 from pandas_log import patched_logs_functions
-from pandas_log.aop_utils import (append_df_attr, calc_step_number,
-                                  get_df_attr, get_pandas_func,
-                                  get_signature_repr, set_df_attr,)
-from pandas_log.settings import (DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE,
-                                 PATCHED_LOG_METHOD_PREFIX, )
+from pandas_log.aop_utils import (
+    append_df_attr,
+    calc_step_number,
+    get_df_attr,
+    get_pandas_func,
+    get_signature_repr,
+    set_df_attr,
+)
+from pandas_log.settings import (
+    DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE,
+    PATCHED_LOG_METHOD_PREFIX,
+)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import humanize
 
 
-def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs, calculate_memory):
+def get_execution_stats(
+    cls, fn, input_df, fn_args, fn_kwargs, calculate_memory
+):
     start = time()
     output_df = get_pandas_func(cls, fn)(input_df, *fn_args, **fn_kwargs)
     exec_time = time() - start
@@ -26,8 +35,14 @@ def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs, calculate_memory)
         exec_time_pretty = f"{round(exec_time,6)} seconds"
     step_number = calc_step_number(fn.__name__, input_df)
 
-    input_memory_size = StepStats.calc_df_series_memory(input_df) if calculate_memory else None
-    output_memory_size = StepStats.calc_df_series_memory(output_df) if calculate_memory else None
+    input_memory_size = (
+        StepStats.calc_df_series_memory(input_df) if calculate_memory else None
+    )
+    output_memory_size = (
+        StepStats.calc_df_series_memory(output_df)
+        if calculate_memory
+        else None
+    )
 
     ExecutionStats = namedtuple(
         "ExecutionStats",
@@ -106,7 +121,7 @@ class StepStats:
 
     def get_logs_for_specifc_method(self, verbose, copy_ok):
         self.fn_kwargs["kwargs"] = self.fn_kwargs.copy()
-        self.fn_kwargs['copy_ok'] = copy_ok
+        self.fn_kwargs["copy_ok"] = copy_ok
         try:
             log_method = getattr(
                 patched_logs_functions,
@@ -142,22 +157,26 @@ class StepStats:
         logs, tips = self.get_logs_for_specifc_method(verbose, copy_ok)
         if not logs:
             # This method isn't patched and verbose is false so we don't print the default
-            return ''
+            return ""
         else:
             metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
             metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
 
             # Step Execution stats
-            exec_time_humanize = (
-                f"* Execution time: Step Took {self.execution_stats.exec_time}."
-            )
+            exec_time_humanize = f"* Execution time: Step Took {self.execution_stats.exec_time}."
             exec_stats_raw = [exec_time_humanize]
             if self.execution_stats.input_memory_size is not None:
-                exec_stats_raw.append(f"* Input Dataframe size is {self.execution_stats.input_memory_size}.")
+                exec_stats_raw.append(
+                    f"* Input Dataframe size is {self.execution_stats.input_memory_size}."
+                )
             if self.execution_stats.output_memory_size is not None:
-                exec_stats_raw.append(f"* Output Dataframe size is {self.execution_stats.output_memory_size}.")
-            exec_stats_raw_str = '\n\t'.join(exec_stats_raw)
-            execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
+                exec_stats_raw.append(
+                    f"* Output Dataframe size is {self.execution_stats.output_memory_size}."
+                )
+            exec_stats_raw_str = "\n\t".join(exec_stats_raw)
+            execution_stats = (
+                f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
+            )
 
             return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}\n\t{metadata_tips}"
 
