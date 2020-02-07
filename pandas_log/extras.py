@@ -1,6 +1,7 @@
 import pandas as pd
 import pandas_flavor as pf
 
+
 @pf.register_dataframe_method
 def dq_check(df, percentiles=None, thorough=True):
     '''
@@ -48,6 +49,7 @@ def dq_check(df, percentiles=None, thorough=True):
         try:
             from sklearn.neighbors import LocalOutlierFactor
             from numpy import percentile
+
             def local_outlier_scores(col):
                 # Calculate 90th percentile and max of local outlier factor (smaller indicates more of an inlier)
                 # Only do 1D outlier detection for now
@@ -71,9 +73,9 @@ def dq_check(df, percentiles=None, thorough=True):
     # Concatenate all the results
     check = pd.concat([description, thorough_df, pd.DataFrame(
         [dtype, missing, p_missing, n_unique, is_unique, is_key, mode, mode_freq,
-        n_zero, n_less_zero, is_empty_string],
+         n_zero, n_less_zero, is_empty_string],
         index=['dtype', 'n_missing', 'p_missing', 'n_unique', 'is_unique', 'is_key', 'mode', 'mode_freq',
-              'n_zero', 'n_less_zero', 'is_empty_string']
+               'n_zero', 'n_less_zero', 'is_empty_string']
     )], sort=True)
     # Since we might be adding some rows that already existed, drop the duplicates
     # This isn't perfectly performant but it's a dataframe of like 10 rows so it won't be noticeable

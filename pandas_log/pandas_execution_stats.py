@@ -1,6 +1,5 @@
 import warnings
 from collections import namedtuple
-from contextlib import suppress
 from functools import partial
 from time import time
 

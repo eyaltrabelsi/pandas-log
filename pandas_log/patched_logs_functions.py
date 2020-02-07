@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import warnings
 
-from pandas_log import settings
-
 
 # Values messages
 ALTERED_VALUES_MSG = "\t* Changed {values_changed} values, {values_unchanged} values were not changed."
@@ -14,7 +12,8 @@ FILTERED_ROWS_MSG = "\t* Removed {rows_removed} rows ({rows_removed_pct}%), {row
 
 # Cols messages
 REMOVED_NO_COLS_MSG = "\t* Removed no columns."
-FILTERED_COLS_MSG = "\t* Removed the following columns ({cols_removed}) now only have the following columns ({cols_remaining})."
+FILTERED_COLS_MSG = "\t* Removed the following columns ({cols_removed}) now only have the following columns" \
+                    "({cols_remaining})."
 ASSIGN_EXISTING_MSG = "\t* The columns {existing_cols} were reassigned."
 ASSIGN_NEW_MSG = "\t* The columns {new_cols} were created."
 
@@ -27,7 +26,8 @@ FILLNA_WITHH_NA_MSG = "\t* Filled {} with {}."
 # Mege messages
 JOIN_ROWS_MSG = "\t* Number of rows changed, after join is {output_rows} rows."
 JOIN_NEW_COLS_MSG = "\t* Added {num_new_columns} columns ({new_columns})."
-JOIN_TYPE_MSG = "\t* Its a {how} join with the following cardinality:\n\t\t> rows only in left is {left_only}.\n\t\t> rows only in right is {right_only}.\n\t\t> rows in both is {both}."
+JOIN_TYPE_MSG = "\t* Its a {how} join with the following cardinality:\n\t\t> rows only in left is {left_only}." \
+                "\n\t\t> rows only in right is {right_only}.\n\t\t> rows in both is {both}."
 
 # Pick messages
 SAMPLE_MSG = "\t* Picked random sample of {output_rows} rows."
@@ -39,8 +39,10 @@ TAIL_MSG = "\t* Picked the last {} rows."
 
 # TIPS
 ITERROWS_TIPS = "\t*iterrows is not recommended, and in the majority of cases will have better alternatives"
-FILLNA_NO_NA_TIP = "\t* There are no nulls in this dataframe, if you are working on the entire dataset you can remove this operation."
-SHOULD_REDUCED_ROW_TIP = "\t* Number of rows didn't change, if you are working on the entire dataset you can remove this operation."
+FILLNA_NO_NA_TIP = "\t* There are no nulls in this dataframe, if you are working on the entire dataset you can " \
+                   "remove this operation."
+SHOULD_REDUCED_ROW_TIP = "\t* Number of rows didn't change, if you are working on the entire dataset you can remove " \
+                         "this operation."
 
 # Others
 SORT_VALUES_MSG = "\t* Sorting by columns {} in a {} order."
@@ -50,8 +52,8 @@ DEFAULT_STRATEGY_USED_MSG = (
 )
 TRANSFORMED_TO_DF_MSG = "\t* After transformation we received Series"
 
-COPY_WARNING_MSG = "Some pandas logging may involve copying dataframes, which can be time-/memory-intensive. Consider passing" \
-           "copy_ok=False to the enable/auto_enable functions in pandas_log if issues arise."
+COPY_WARNING_MSG = "Some pandas logging may involve copying dataframes, which can be time-/memory-intensive. " \
+                   "Consider passing copy_ok=False to the enable/auto_enable functions in pandas_log if issues arise."
 
 
 def rows_removed(input_df, output_df):
@@ -150,6 +152,7 @@ def log_default(output_df, input_df, *args, **kwargs):
         logs.append(TRANSFORMED_TO_DF_MSG)
     logs = "\n".join(logs)
     return logs, tips
+
 
 def log_no_message(output_df, input_df, *args, **kwargs):
     return '', ''
@@ -472,7 +475,6 @@ def log_where(
         *args,
         **kwargs
     )
-
 
 
 def log_sample(

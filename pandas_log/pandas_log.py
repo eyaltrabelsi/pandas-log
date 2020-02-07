@@ -5,7 +5,6 @@
 import warnings
 from contextlib import contextmanager
 from functools import wraps
-from copy import copy
 
 import pandas as pd
 import pandas_flavor as pf
@@ -157,6 +156,7 @@ def create_overide_pandas_func(cls, func, verbose, silent, full_signature, copy_
             register_method_wrapper = pf.register_dataframe_method
         elif cls == pd.Series:
             register_method_wrapper = pf.register_series_method
+
         @register_method_wrapper
         @wraps(fn)
         def wrapped(*args, **fn_kwargs):
