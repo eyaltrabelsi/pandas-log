@@ -56,6 +56,10 @@ COPY_WARNING_MSG = "Some pandas logging may involve copying dataframes, which ca
                    "Consider passing copy_ok=False to the enable/auto_enable functions in pandas_log if issues arise."
 
 
+def _stringify_list(l):
+    return [str(x) for x in l]
+
+
 def rows_removed(input_df, output_df):
     return len(input_df) - len(output_df)
 
@@ -69,11 +73,11 @@ def rows_remaining(output_df):
 
 
 def cols_removed(input_df, output_df):
-    return ", ".join(set(input_df.columns) - set(output_df.columns))
+    return ", ".join(_stringify_list(set(input_df.columns) - set(output_df.columns)))
 
 
 def cols_remaining(output_df):
-    return ", ".join(set(output_df.columns))
+    return ", ".join(_stringify_list(set(output_df.columns)))
 
 
 def is_same_cols(input_df, output_df):
@@ -97,7 +101,7 @@ def num_of_na(df):
 
 
 def str_new_columns(input_df, output_df):
-    return ", ".join(set(output_df.columns) - set(input_df.columns))
+    return ", ".join(_stringify_list(set(output_df.columns) - set(input_df.columns)))
 
 
 def num_new_columns(input_df, output_df):
