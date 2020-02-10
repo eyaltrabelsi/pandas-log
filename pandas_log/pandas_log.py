@@ -67,7 +67,6 @@ def auto_enable(
     silent=False,
     full_signature=True,
     copy_ok=True,
-    extras=True,
     calculate_memory=False,
 ):
     """ Adds the additional logging functionality (statistics) to pandas methods.
@@ -104,13 +103,7 @@ def auto_enable(
                         copy_ok,
                         calculate_memory,
                     )
-    if extras:
-        enable_extras()
     ALREADY_ENABLED = True
-
-
-def enable_extras():
-    import pandas_log.extras
 
 
 def create_overide_pandas_func(
