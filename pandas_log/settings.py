@@ -13,6 +13,8 @@ DATAFRAME_METHODS_TO_OVERIDE = [
     "assign",
     "sort_index",
     "sort_values",
+    "head",
+    "tail",
     "sample",
     "fillna",
     "merge",
