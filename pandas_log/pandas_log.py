@@ -90,30 +90,20 @@ def auto_enable(
     # Suppressing warning of the fact we override pandas functions.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        for func in dir(pd.DataFrame):
-            if func in settings.DATAFRAME_METHODS_TO_OVERIDE:
-                keep_pandas_func_copy(pd.DataFrame, func)
-                create_overide_pandas_func(
-                    pd.DataFrame,
-                    func,
-                    verbose,
-                    silent,
-                    full_signature,
-                    copy_ok,
-                    calculate_memory,
-                )
-        for func in dir(pd.Series):
-            if func in settings.SERIES_METHODS_TO_OVERIDE:
-                keep_pandas_func_copy(pd.Series, func)
-                create_overide_pandas_func(
-                    pd.Series,
-                    func,
-                    verbose,
-                    silent,
-                    full_signature,
-                    copy_ok,
-                    calculate_memory,
-                )
+        for cls, overrides in [(pd.DataFrame, settings.DATAFRAME_METHODS_TO_OVERIDE),
+                               (pd.Series, settings.SERIES_METHODS_TO_OVERIDE)]:
+            for func in dir(cls):
+                if func in overrides:
+                    keep_pandas_func_copy(cls, func)
+                    create_overide_pandas_func(
+                        cls,
+                        func,
+                        verbose,
+                        silent,
+                        full_signature,
+                        copy_ok,
+                        calculate_memory,
+                    )
     if extras:
         enable_extras()
     ALREADY_ENABLED = True
