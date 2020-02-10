@@ -572,6 +572,33 @@ def log__iterrows(output_df, input_df):
     return logs, tips
 
 
+def log___getitem__(output_df, input_df, key, *args, **kwargs):
+    logs = []
+    tips = ""
+
+    if isinstance(output_df, pd.Series):
+        # Naive handle of __getitem__ which return series
+        logs = TRANSFORMED_TO_DF_MSG
+        return logs, tips
+
+    if not is_same_cols(input_df, output_df):
+        logs.append(
+            FILTERED_COLS_MSG.format(
+                cols_removed=cols_removed(input_df, output_df),
+                cols_remaining=cols_remaining(output_df),
+            )
+        )
+    if not is_same_rows(input_df, output_df):
+        logs.append(
+            FILTERED_ROWS_MSG.format(
+                rows_removed=rows_removed(input_df, output_df),
+                rows_removed_pct=rows_removed_pct(input_df, output_df),
+                rows_remaining=rows_remaining(output_df),
+            )
+        )
+    logs = "\n".join(logs)
+    return logs, tips
+
 # TODO add tip on types+cardinality
 
 if __name__ == "__main__":
