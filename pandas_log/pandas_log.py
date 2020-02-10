@@ -89,8 +89,10 @@ def auto_enable(
     # Suppressing warning of the fact we override pandas functions.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        for cls, overrides in [(pd.DataFrame, settings.DATAFRAME_METHODS_TO_OVERIDE),
-                               (pd.Series, settings.SERIES_METHODS_TO_OVERIDE)]:
+        for cls, overrides in [
+            (pd.DataFrame, settings.DATAFRAME_METHODS_TO_OVERIDE),
+            (pd.Series, settings.SERIES_METHODS_TO_OVERIDE),
+        ]:
             for func in dir(cls):
                 if func in overrides:
                     keep_pandas_func_copy(cls, func)

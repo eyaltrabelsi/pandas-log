@@ -123,12 +123,17 @@ def num_new_columns(input_df, output_df):
 
 
 def num_values_changed(input_obj, output_obj):
-    if isinstance(input_obj, pd.Series) and isinstance(output_obj, pd.Series) and input_obj.dtype != output_obj.dtype:
+    if (
+        isinstance(input_obj, pd.Series)
+        and isinstance(output_obj, pd.Series)
+        and input_obj.dtype != output_obj.dtype
+    ):
         # Comparing values for equality across dtypes wouldn't be well-defined so we just say they all changed
         values_changed = len(input_obj)
     else:
         values_changed = (
-            (output_obj != input_obj) & ~(output_obj.isnull() & input_obj.isnull())
+            (output_obj != input_obj)
+            & ~(output_obj.isnull() & input_obj.isnull())
         ).sum()
     if isinstance(input_obj, pd.DataFrame):
         # We only summed once so values_changed will be a series, so we sum again
@@ -602,6 +607,7 @@ def log___getitem__(output_df, input_df, key, *args, **kwargs):
         )
     logs = "\n".join(logs)
     return logs, tips
+
 
 # TODO add tip on types+cardinality
 
