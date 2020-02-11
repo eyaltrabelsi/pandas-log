@@ -168,11 +168,8 @@ def create_overide_pandas_func(
             output_df,
         )
         step_stats.log_stats_if_needed(silent, verbose, copy_ok)
-        if isinstance(output_df, pd.DataFrame) or isinstance(
-            output_df, pd.Series
-        ):
+        if isinstance(output_df, pd.DataFrame) or isinstance(output_df, pd.Series):
             step_stats.persist_execution_stats()
-        # Don't think there's any garbage collection we should do manually?
         return output_df
 
     def _overide_pandas_method(fn):
@@ -201,9 +198,7 @@ def create_overide_pandas_func(
 
         return wrapped
 
-    return exec(
-        f"@_overide_pandas_method\ndef {func}(df, *args, **kwargs): pass"
-    )
+    return exec(f"@_overide_pandas_method\ndef {func}(df, *args, **kwargs): pass")
 
 
 if __name__ == "__main__":
