@@ -24,9 +24,7 @@ with warnings.catch_warnings():
     import humanize
 
 
-def get_execution_stats(
-    cls, fn, input_df, fn_args, fn_kwargs, calculate_memory
-):
+def get_execution_stats(cls, fn, input_df, fn_args, fn_kwargs, calculate_memory):
     start = time()
     output_df = get_pandas_func(cls, fn)(input_df, *fn_args, **fn_kwargs)
     exec_time = time() - start
@@ -39,14 +37,11 @@ def get_execution_stats(
         StepStats.calc_df_series_memory(input_df) if calculate_memory else None
     )
     output_memory_size = (
-        StepStats.calc_df_series_memory(output_df)
-        if calculate_memory
-        else None
+        StepStats.calc_df_series_memory(output_df) if calculate_memory else None
     )
 
     ExecutionStats = namedtuple(
-        "ExecutionStats",
-        "exec_time step_number input_memory_size output_memory_size",
+        "ExecutionStats", "exec_time step_number input_memory_size output_memory_size",
     )
     execution_stats = ExecutionStats(
         exec_time_pretty, step_number, input_memory_size, output_memory_size
@@ -109,10 +104,7 @@ class StepStats:
         if silent or not ALREADY_ENABLED:
             return
 
-        if (
-            verbose
-            or self.fn.__name__ not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
-        ):
+        if verbose or self.fn.__name__ not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE:
             s = self.__repr__(verbose, copy_ok)
             if s:
                 # If this method isn't patched and verbose is False, __repr__ will give an empty string, which
@@ -155,30 +147,29 @@ class StepStats:
 
         # Step Metadata stats
         logs, tips = self.get_logs_for_specifc_method(verbose, copy_ok)
-        if not logs:
-            # This method isn't patched and verbose is false so we don't print the default
-            return ""
-        else:
-            metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
-            metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
+        metadata_stats = f"\033[4mMetadata\033[0m:\n{logs}" if logs else ""
+        metadata_tips = f"\033[4mTips\033[0m:\n{tips}" if tips else ""
 
-            # Step Execution stats
-            exec_time_humanize = f"* Execution time: Step Took {self.execution_stats.exec_time}."
-            exec_stats_raw = [exec_time_humanize]
-            if self.execution_stats.input_memory_size is not None:
-                exec_stats_raw.append(
-                    f"* Input Dataframe size is {self.execution_stats.input_memory_size}."
-                )
-            if self.execution_stats.output_memory_size is not None:
-                exec_stats_raw.append(
-                    f"* Output Dataframe size is {self.execution_stats.output_memory_size}."
-                )
-            exec_stats_raw_str = "\n\t".join(exec_stats_raw)
-            execution_stats = (
-                f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
+        # Step Execution stats
+        exec_time_humanize = (
+            f"* Execution time: Step Took {self.execution_stats.exec_time}."
+        )
+        exec_stats_raw = [exec_time_humanize]
+        if self.execution_stats.input_memory_size is not None:
+            exec_stats_raw.append(
+                f"* Input Dataframe size is {self.execution_stats.input_memory_size}."
             )
+        if self.execution_stats.output_memory_size is not None:
+            exec_stats_raw.append(
+                f"* Output Dataframe size is {self.execution_stats.output_memory_size}."
+            )
+        exec_stats_raw_str = "\n\t".join(exec_stats_raw)
+        execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
 
-            return f"\n{step_title}\n\t{metadata_stats}\n\t{execution_stats}\n\t{metadata_tips}"
+        all_logs = [metadata_stats, execution_stats, metadata_tips]
+        all_logs_str = "\n\t".join([x for x in all_logs if x])
+
+        return f"\n{step_title}\n\t{all_logs_str}"
 
 
 if __name__ == "__main__":
