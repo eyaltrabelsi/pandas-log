@@ -33,7 +33,7 @@ Lets look at an example, first we need to load ``pandas-log`` after ``pandas`` a
 .. code-block:: python
 
     import pandas
-    import pandas_logs
+    import pandas_log
 
     with pandas_logs.enable():
         df = pd.DataFrame({"name": ['Alfred', 'Batman', 'Catwoman'],
