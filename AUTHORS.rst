@@ -10,4 +10,4 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Charles Davis <charles.m.davis.iv@gmail.com>

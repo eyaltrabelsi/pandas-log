@@ -1,7 +1,12 @@
 ORIGINAL_METHOD_PREFIX = "original_"
 PATCHED_LOG_METHOD_PREFIX = "log_"
-PANDAS_ADDITIONAL_METHODS_TO_OVERIDE = ["copy", "reset_index", "__getitem__"]
-PANDAS_METHODS_TO_OVERIDE = [
+DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE = [
+    "copy",
+    "reset_index",
+    "__getitem__",
+    "__setitem__",
+]
+DATAFRAME_METHODS_TO_OVERIDE = [
     "query",
     "drop",
     "dropna",
@@ -61,3 +66,4 @@ PANDAS_METHODS_TO_OVERIDE = [
     "mode",
     "std",
 ]
+SERIES_METHODS_TO_OVERIDE = ["mask", "where"]

@@ -4,7 +4,7 @@ from inspect import signature
 import pandas as pd
 
 from pandas_log import settings
-from pandas_log.settings import PANDAS_ADDITIONAL_METHODS_TO_OVERIDE
+from pandas_log.settings import DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE
 
 
 def set_df_attr(df, attr_name, attr_value):
@@ -40,24 +40,29 @@ def get_df_attr(df, attr_name, default_val):
     return df.__dict__.get(attr_name, default_val)
 
 
-def get_pandas_func(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def get_pandas_func(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     """ Get original pandas method
 
+        :param cls: pandas class
         :param func: pandas method name
         :param prefix: the prefix used to keep original method
         :return: Original pandas method
     """
 
-    return getattr(pd.DataFrame, f"{prefix}{func.__name__}")
+    _raise_on_bad_class(cls)
+    return getattr(cls, f"{prefix}{func.__name__}")
 
 
-def get_signature_repr(fn, args, full_signature=True):
+def get_signature_repr(cls, fn, args, full_signature=True):
     """ Get the signature for the original pandas method with actual values
 
+        :param cls: the pandas class
         :param fn: The pandas method
         :param args: The arguments used when it was applied
         :return: string representation of the signature for the applied pandas method
     """
+
+    _raise_on_bad_class(cls)
 
     def _get_bold_text(text):
         return f"\033[1m{text}\033[0m"
@@ -66,7 +71,7 @@ def get_signature_repr(fn, args, full_signature=True):
         return [
             param_value if full_signature else param_name
             for param_name, param_value in signature(
-                get_pandas_func(fn)
+                get_pandas_func(cls, fn)
             ).parameters.items()
             if param_name not in ("kwargs", "self")
         ]
@@ -81,6 +86,7 @@ def get_signature_repr(fn, args, full_signature=True):
             res = (
                 param_name
                 if isinstance(arg_value, pd.DataFrame)
+                or isinstance(arg_value, pd.Series)
                 else f"{param_name}={arg_value}"
             )
         return res
@@ -94,28 +100,40 @@ def get_signature_repr(fn, args, full_signature=True):
     return f"{_get_bold_text(fn.__name__)}({args_vals}):"
 
 
-def restore_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def _raise_on_bad_class(cls):
+    implemented_classes = (pd.DataFrame, pd.Series)
+    if cls not in implemented_classes:
+        raise TypeError("cls must be one of {}".format(implemented_classes))
+
+
+def restore_pandas_func_copy(
+    cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX
+):
     """ Restore the original pandas method instead of overridden one
 
+        :param cls: class containing the method
         :param func: pandas method name
         :param prefix: the prefix used to keep original method
         :return: None
     """
 
-    original_method = getattr(pd.DataFrame, func)
-    setattr(pd.DataFrame, func.replace(prefix, ""), original_method)
+    _raise_on_bad_class(cls)
+    original_method = getattr(cls, func)
+    setattr(cls, func.replace(prefix, ""), original_method)
 
 
-def keep_pandas_func_copy(func, prefix=settings.ORIGINAL_METHOD_PREFIX):
+def keep_pandas_func_copy(cls, func, prefix=settings.ORIGINAL_METHOD_PREFIX):
     """ Saved copy of the pandas method before it overridden
 
+        :param cls: class containing the method
         :param func: pandas method name
         :param prefix: the prefix used to keep original method
         :return: None
     """
 
-    original_method = getattr(pd.DataFrame, func)
-    setattr(pd.DataFrame, f"{prefix}{func}", original_method)
+    _raise_on_bad_class(cls)
+    original_method = getattr(cls, func)
+    setattr(cls, f"{prefix}{func}", original_method)
 
 
 def calc_step_number(method_name, input_df):
@@ -124,7 +142,7 @@ def calc_step_number(method_name, input_df):
     if step_number:
         step_number = step_number[-1].execution_stats.step_number
 
-    if method_name not in PANDAS_ADDITIONAL_METHODS_TO_OVERIDE:
+    if method_name not in DATAFRAME_ADDITIONAL_METHODS_TO_OVERIDE:
         step_number += 1
     return step_number
 
