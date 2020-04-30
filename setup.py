@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-requirements = []
+requirements = ["humanize>=0.5.0", "pandas>=0.25.1", "pandas_flavor>=0.1.2"]
 
 setup_requirements = ['pytest-runner', ]
 
