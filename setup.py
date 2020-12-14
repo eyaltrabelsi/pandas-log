@@ -10,10 +10,6 @@ with open('README.rst') as readme_file:
 
 requirements = ["humanize>=0.5.0", "pandas>=0.25.1", "pandas_flavor>=0.1.2"]
 
-setup_requirements = ['pytest-runner', ]
-
-test_requirements = ['pytest>=3', ]
-
 setup(
     name='pandas-log',
     version='0.1.7',
@@ -29,7 +25,6 @@ setup(
     long_description="pandas-log provides feedback about basic pandas operations. It provides simple wrapper functions "
                      "for the most common functions, such as apply, map, query and more.",
     long_description_content_type="text/x-rst",
-    setup_requires=setup_requirements,
-    test_suite='tests',
-    tests_require=test_requirements
+    extras_require={'development': ['bump2version==0.5.11', 'tox==3.14.0', 'Sphinx==3.0.4', 'twine==3.1.1', 'pytest==5.1.3', 'pandas==0.25.1', 'pandas_flavor==0.1.2', 'humanize==0.5.0', 'nbval==0.9.5', 'ipykernel==5.2.0']},
+
 )
