@@ -5,3 +5,9 @@ pandas_log/__pycache__
 .cache
 .eggs
 *.egg-info
+.pytest_cache
+.tox
+build/
+dist/
+*.ipynb_checkpoints/
+*.DS_Store
