@@ -85,10 +85,10 @@ def get_signature_repr(cls, fn, args, full_signature=True):
             )
             res = (
                 param_name
-                if isinstance(arg_value, pd.DataFrame)
-                or isinstance(arg_value, pd.Series)
+                if isinstance(arg_value, (pd.DataFrame, pd.Series))
                 else f"{param_name}={arg_value}"
             )
+
         return res
 
     zip_func = itertools.zip_longest if full_signature else zip
@@ -147,5 +147,4 @@ def calc_step_number(method_name, input_df):
     return step_number
 
 
-if __name__ == "__main__":
-    pass
+pass

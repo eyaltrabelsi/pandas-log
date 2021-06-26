@@ -167,10 +167,9 @@ class StepStats:
         execution_stats = f"\033[4mExecution Stats\033[0m:\n\t{exec_stats_raw_str}"
 
         all_logs = [metadata_stats, execution_stats, metadata_tips]
-        all_logs_str = "\n\t".join([x for x in all_logs if x])
+        all_logs_str = "\n\t".join(x for x in all_logs if x)
 
         return f"\n{step_title}\n\t{all_logs_str}"
 
 
-if __name__ == "__main__":
-    pass
+pass
