@@ -168,7 +168,7 @@ def create_overide_pandas_func(
             output_df,
         )
         step_stats.log_stats_if_needed(silent, verbose, copy_ok)
-        if isinstance(output_df, pd.DataFrame) or isinstance(output_df, pd.Series):
+        if isinstance(output_df, (pd.DataFrame, pd.Series)):
             step_stats.persist_execution_stats()
         return output_df
 
@@ -183,7 +183,7 @@ def create_overide_pandas_func(
         def wrapped(*args, **fn_kwargs):
 
             input_df, fn_args = args[0], args[1:]
-            output_df = _run_method_and_calc_stats(
+            return _run_method_and_calc_stats(
                 fn,
                 fn_args,
                 fn_kwargs,
@@ -194,12 +194,10 @@ def create_overide_pandas_func(
                 copy_ok,
                 calculate_memory,
             )
-            return output_df
 
         return wrapped
 
     return exec(f"@_overide_pandas_method\ndef {func}(df, *args, **kwargs): pass")
 
 
-if __name__ == "__main__":
-    pass
+pass

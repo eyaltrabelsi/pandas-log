@@ -472,12 +472,12 @@ def log_mask(
     **kwargs,
 ):
     values_changed, values_unchanged = num_values_changed(input_df, output_df)
-    logs = []
-    logs.append(
+    logs = [
         ALTERED_VALUES_MSG.format(
             values_changed=values_changed, values_unchanged=values_unchanged
         )
-    )
+    ]
+
     if isinstance(cond, pd.Series) and isinstance(input_df, pd.Series):
         # Calculate the values for which the condition was true but the value didn't change only for this simplest case,
         # where we can just & the two series
@@ -568,8 +568,9 @@ def log_groupby(
     groups = list(output_df.groups)
     groups_len = len(groups)
     groups_repr = (
-        ",".join(["\n\t\t" + str(x) for x in groups[:5]]) + ",\n\t  and more"
+        ",".join("\n\t\t" + str(x) for x in groups[:5]) + ",\n\t  and more"
     )
+
     tips = ""
     logs = GROUPBY_MSG.format(group_by, groups_len, groups_repr)
     return logs, tips
@@ -611,5 +612,4 @@ def log___getitem__(output_df, input_df, key, *args, **kwargs):
 
 # TODO add tip on types+cardinality
 
-if __name__ == "__main__":
-    pass
+pass
